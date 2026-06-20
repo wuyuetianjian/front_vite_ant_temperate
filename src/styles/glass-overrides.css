@@ -35,14 +35,45 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
   transform: translateY(-1px);
 }
-.ant-btn-text {
+.ant-btn-text:not(.ant-btn-dangerous) {
   color: var(--glass-text-primary) !important;
 }
-.ant-btn-text:not(:disabled):hover {
+.ant-btn-text:not(.ant-btn-dangerous):not(:disabled):hover {
   background: rgba(255, 255, 255, 0.12) !important;
 }
-[data-theme="dark"] .ant-btn-text:not(:disabled):hover {
+[data-theme="dark"] .ant-btn-text:not(.ant-btn-dangerous):not(:disabled):hover {
   background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── DANGER BUTTONS ── */
+/* text + danger (delete icon, kick button) */
+.ant-btn-text.ant-btn-dangerous {
+  color: #ef4444 !important;
+}
+.ant-btn-text.ant-btn-dangerous:not(:disabled):hover {
+  color: #f87171 !important;
+  background: rgba(239, 68, 68, 0.10) !important;
+}
+/* default + danger */
+.ant-btn-default.ant-btn-dangerous {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.30) !important;
+  color: #ef4444 !important;
+}
+.ant-btn-default.ant-btn-dangerous:not(:disabled):hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.55) !important;
+  color: #f87171 !important;
+}
+/* primary + danger */
+.ant-btn-primary.ant-btn-dangerous {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255,255,255,0.20) !important;
+  border-color: transparent !important;
+}
+.ant-btn-primary.ant-btn-dangerous:not(:disabled):hover {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
+  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
 }
 
 /* ── CARD ── */
@@ -236,14 +267,28 @@
 }
 
 /* ── TAG ── */
+/* All tags: pill shape + light glass texture */
 .ant-tag {
-  background: rgba(255, 255, 255, 0.10) !important;
+  border-radius: 999px !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Default/uncolored tags only: full glass treatment */
+.ant-tag:not(.ant-tag-success):not(.ant-tag-error):not(.ant-tag-warning)
+:not(.ant-tag-processing):not(.ant-tag-blue):not(.ant-tag-purple)
+:not(.ant-tag-cyan):not(.ant-tag-green):not(.ant-tag-magenta)
+:not(.ant-tag-red):not(.ant-tag-orange):not(.ant-tag-gold)
+:not(.ant-tag-lime):not(.ant-tag-geekblue):not(.ant-tag-volcano) {
+  background: rgba(255, 255, 255, 0.12) !important;
   border-color: var(--glass-border) !important;
   color: var(--glass-text-primary) !important;
-  backdrop-filter: blur(8px);
-  border-radius: 999px !important;
 }
-[data-theme="dark"] .ant-tag {
+[data-theme="dark"] .ant-tag:not(.ant-tag-success):not(.ant-tag-error):not(.ant-tag-warning)
+:not(.ant-tag-processing):not(.ant-tag-blue):not(.ant-tag-purple)
+:not(.ant-tag-cyan):not(.ant-tag-green):not(.ant-tag-magenta)
+:not(.ant-tag-red):not(.ant-tag-orange):not(.ant-tag-gold)
+:not(.ant-tag-lime):not(.ant-tag-geekblue):not(.ant-tag-volcano) {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
