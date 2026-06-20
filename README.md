@@ -60,6 +60,43 @@ Fields exposed by `src/config.ts`:
 
 ---
 
+## Admin Pages
+
+| Page | Path | Permission Required |
+|------|------|---------------------|
+| Dashboard | `/admin` | (any authenticated user) |
+| Users | `/admin/users` | `ListUsers` |
+| Roles | `/admin/roles` | `ListRoles` |
+| Permissions | `/admin/permissions` | `ListPermissions` |
+| SSO Providers | `/admin/sso` | `ListSSOProviders` |
+| Online Sessions | `/admin/sessions` | `ListSessions` |
+| Audit Logs | `/admin/audit-logs` | `ListAuditLogs` |
+| System Settings | `/admin/settings` | `GetSystemSettings` |
+| **Service Accounts** | `/admin/service-accounts` | `ListServiceAccounts` |
+| Profile | `/admin/profile` | (any authenticated user) |
+
+### Service Accounts Page
+
+The Service Accounts page lets administrators create and manage machine/service
+identities that can call the backend API directly using long-lived tokens.
+
+**Key features:**
+
+- **Create** — Enter a name, optional description, validity period (days, 0 =
+  never expires), and assigned roles. The generated token is displayed once in a
+  modal dialog with copy support.
+- **Token display modal** — Shows the full token and ready-to-use code snippets
+  for Java, Go, Rust, and Python.
+- **Edit** — Update description, enable/disable the account, and change role
+  assignments.
+- **Regenerate token** — Rotate the token immediately (old token is invalidated).
+  The new token is displayed in the same modal with code templates.
+- **Delete** — Permanently removes the service account and invalidates its token.
+
+All create, regenerate, and delete actions are recorded in the audit log.
+
+---
+
 ## Docker Deployment
 
 ### Build the image

@@ -8,7 +8,7 @@ import {
   UserOutlined, TeamOutlined, SafetyOutlined, DashboardOutlined,
   LogoutOutlined, GlobalOutlined, MoonOutlined, SunOutlined, DesktopOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, KeyOutlined, AppstoreOutlined, ApartmentOutlined,
-  MonitorOutlined, FileSearchOutlined, SettingOutlined,
+  MonitorOutlined, FileSearchOutlined, SettingOutlined, RobotOutlined,
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/auth'
@@ -79,6 +79,7 @@ export default function AdminLayout() {
     if (p.startsWith('/admin/sessions')) return 'sessions'
     if (p.startsWith('/admin/audit-logs')) return 'audit-logs'
     if (p.startsWith('/admin/settings')) return 'settings'
+    if (p.startsWith('/admin/service-accounts')) return 'service-accounts'
     if (p.startsWith('/admin/profile')) return 'profile'
     return 'dashboard'
   })()
@@ -118,6 +119,11 @@ export default function AdminLayout() {
       key: 'settings',
       icon: <SettingOutlined />,
       label: <Link to="/admin/settings">{t('nav.settings')}</Link>,
+    },
+    hasPermission(`${SVC}/ListServiceAccounts`) && {
+      key: 'service-accounts',
+      icon: <RobotOutlined />,
+      label: <Link to="/admin/service-accounts">{t('nav.serviceAccounts')}</Link>,
     },
   ].filter(Boolean) as MenuProps['items']
 

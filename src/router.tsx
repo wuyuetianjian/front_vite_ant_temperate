@@ -14,6 +14,7 @@ import ProfilePage from './pages/admin/ProfilePage'
 import SessionsPage from './pages/admin/SessionsPage'
 import AuditLogsPage from './pages/admin/AuditLogsPage'
 import SettingsPage from './pages/admin/SettingsPage'
+import ServiceAccountsPage from './pages/admin/ServiceAccountsPage'
 
 const SVC = '/temperate.v1.TemperateService'
 
@@ -82,6 +83,14 @@ export const router = createBrowserRouter([
         element: (
           <PermissionRoute operation={`${SVC}/GetSystemSettings`}>
             <SettingsPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'service-accounts',
+        element: (
+          <PermissionRoute operation={`${SVC}/ListServiceAccounts`}>
+            <ServiceAccountsPage />
           </PermissionRoute>
         ),
       },

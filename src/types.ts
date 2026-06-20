@@ -134,3 +134,25 @@ export interface ListPermissionsReply {
   permissions: Permission[]
   total: number
 }
+
+export interface ServiceAccount {
+  id: number
+  name: string
+  description: string
+  token_prefix: string
+  disabled: boolean
+  roles: Role[]
+  expires_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ServiceAccountTokenReply {
+  service_account: ServiceAccount
+  token: string
+}
+
+export interface ListServiceAccountsReply {
+  service_accounts: ServiceAccount[]
+  total: number
+}

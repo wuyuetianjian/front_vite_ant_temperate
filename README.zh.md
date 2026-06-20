@@ -60,6 +60,41 @@ BACKEND_URL=http://localhost:8000
 
 ---
 
+## 管理页面
+
+| 页面 | 路径 | 所需权限 |
+|------|------|----------|
+| 仪表盘 | `/admin` | （任意已登录用户） |
+| 用户管理 | `/admin/users` | `ListUsers` |
+| 角色管理 | `/admin/roles` | `ListRoles` |
+| 权限管理 | `/admin/permissions` | `ListPermissions` |
+| SSO 认证 | `/admin/sso` | `ListSSOProviders` |
+| 在线会话 | `/admin/sessions` | `ListSessions` |
+| 审计日志 | `/admin/audit-logs` | `ListAuditLogs` |
+| 系统设置 | `/admin/settings` | `GetSystemSettings` |
+| **服务账号** | `/admin/service-accounts` | `ListServiceAccounts` |
+| 个人设置 | `/admin/profile` | （任意已登录用户） |
+
+### 服务账号页面
+
+服务账号页面允许管理员创建和管理机器/服务身份，使其可以使用长期有效的
+Token 直接调用后端 API。
+
+**主要功能：**
+
+- **新建** — 填写名称、描述（可选）、有效期（天，0 = 永不过期）和绑定角色。
+  生成的 Token 在弹窗中展示一次，支持一键复制。
+- **Token 展示弹窗** — 显示完整 Token，并提供 Java、Go、Rust、Python
+  四种语言的使用代码模板。
+- **编辑** — 修改描述、启用/禁用账号、更改角色绑定。
+- **重新生成 Token** — 立即轮换 Token（原 Token 即时失效），
+  新 Token 同样在弹窗中展示并附带代码模板。
+- **删除** — 永久删除服务账号并使其 Token 失效。
+
+所有创建、重新生成和删除操作均会记录至审计日志。
+
+---
+
 ## Docker 部署
 
 ### 构建镜像
