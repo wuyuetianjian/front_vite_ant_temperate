@@ -21,9 +21,9 @@
   --glass-text-primary:   rgba(20, 20, 30, 0.90);
   --glass-text-secondary: rgba(20, 20, 30, 0.55);
 
-  /* Accent — indigo */
-  --glass-accent:      #6366f1;
-  --glass-accent-glow: rgba(99, 102, 241, 0.35);
+  /* Accent — blue */
+  --glass-accent:      #3b82f6;
+  --glass-accent-glow: rgba(59, 130, 246, 0.35);
 
   /* Wallpaper overlay tint for readability */
   --wallpaper-overlay: rgba(255, 255, 255, 0.10);
@@ -49,6 +49,7 @@
     var(--glass-shadow),
     inset 0 1px 0 var(--glass-specular);
   border-radius: var(--glass-radius-md);
+  transform: translateZ(0);
 }
 
 /* ── CONTENT CARD ── */
@@ -78,24 +79,24 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  will-change: transform;
 }
 
 /* Default gradient shown when no wallpaper is set */
 .wallpaper-bg-default {
   background-image:
-    radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.20) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(96, 165, 250, 0.15) 0%, transparent 50%),
     radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
-    linear-gradient(135deg, #e8eaf6 0%, #f3f4fb 50%, #ede7f6 100%);
+    linear-gradient(135deg, #eff6ff 0%, #f0f9ff 50%, #dbeafe 100%);
 }
 
 [data-theme="dark"] .wallpaper-bg-default {
   background-image:
-    radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.13) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(96, 165, 250, 0.13) 0%, transparent 50%),
     radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.09) 0%, transparent 45%),
-    linear-gradient(135deg, #0d0d1f 0%, #111827 50%, #0d1117 100%);
+    linear-gradient(135deg, #0a1628 0%, #0f172a 50%, #0d1117 100%);
 }
 
 /* Overlay for readability */

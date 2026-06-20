@@ -7,16 +7,18 @@ import { ssoApi } from '../api/sso'
 import { apiError } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { useAuthSettingsStore } from '../store/authSettings'
+import { isCustomIcon, useSystemSettingsStore } from '../store/systemSettings'
 import type { SSOProviderBrief } from '../types'
 import '../App.css'
 
 const { Text, Title } = Typography
 
 function BrandMark() {
+  const icon = useSystemSettingsStore((s) => s.settings.corner_icon)
   return (
     <img
       className="brand-mark"
-      src="https://i.postimg.cc/nLrDYrHW/icon.png"
+      src={isCustomIcon(icon) ? icon : 'https://i.postimg.cc/nLrDYrHW/icon.png'}
       alt=""
       aria-hidden="true"
     />
@@ -177,13 +179,13 @@ function AnimatedCharacters({ isTyping, showPassword, passwordLength }: {
 
   return (
     <div className="characters" aria-hidden="true">
-      <div ref={purpleRef} className="auth-character purple-character" style={{
+      <div ref={purpleRef} className="auth-character blue-character" style={{
         height: isTyping || isHiding ? '440px' : '400px',
         transform: passwordLength > 0 && showPassword ? 'skewX(0deg)'
           : isTyping || isHiding ? `skewX(${pp.bodySkew - 12}deg) translateX(40px)`
           : `skewX(${pp.bodySkew}deg)`,
       }}>
-        <div className="auth-eye-row purple-eyes" style={{
+        <div className="auth-eye-row blue-eyes" style={{
           left: passwordLength > 0 && showPassword ? '20px' : isLooking ? '55px' : `${45 + pp.faceX}px`,
           top: passwordLength > 0 && showPassword ? '35px' : isLooking ? '65px' : `${40 + pp.faceY}px`,
         }}>
@@ -273,6 +275,7 @@ export default function LoginPage() {
   const [isTyping, setIsTyping] = useState(false)
   const [passwordLength, setPasswordLength] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const serviceName = useSystemSettingsStore((s) => s.settings.service_name)
   const [ssoProviders, setSsoProviders] = useState<SSOProviderBrief[]>([])
   const localAuthEnabled = useAuthSettingsStore((s) => s.localAuthEnabled)
 
@@ -325,9 +328,9 @@ export default function LoginPage() {
         <div className="bg-orb orb-3" aria-hidden="true" />
 
         <section className="brand-panel">
-          <a className="brand-link" href="/" aria-label="CareerCompass home">
+          <a className="brand-link" href="/" aria-label={`${serviceName} home`}>
             <BrandMark />
-            <span>CareerCompass</span>
+            <span>{serviceName}</span>
           </a>
 
           <div className="visual-stage">
@@ -347,7 +350,7 @@ export default function LoginPage() {
         <section className="form-panel" aria-label="Login form">
           <div className="mobile-brand">
             <BrandMark />
-            <span>CareerCompass</span>
+            <span>{serviceName}</span>
           </div>
 
           <div className="login-box">

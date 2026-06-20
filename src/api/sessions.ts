@@ -19,12 +19,12 @@ function normalizeSession(session: UserSessionWire): UserSession {
 }
 
 export const sessionsApi = {
-  list: (params?: PageParams) =>
+  list: (params?: PageParams & { username?: string }) =>
     client.get<ListSessionsReply>('/v1/sessions', { params }).then((r) => ({
       ...r.data,
       sessions: (r.data.sessions ?? []).map((session) => normalizeSession(session)),
     })),
 
-  kick: (id: number) =>
-    client.post(`/v1/sessions/${id}/kick`),
+  kick: (id: number, meta?: { detail?: string; resource_name?: string }) =>
+    client.post(`/v1/sessions/${id}/kick`, meta ?? {}),
 }

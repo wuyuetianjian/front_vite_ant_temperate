@@ -93,8 +93,16 @@ export interface AuditLogEntry {
 }
 
 export interface SystemSettings {
+  auditLogRetentionDays?: number
+  sessionLogRetentionDays?: number
+  serviceName?: string
+  siteIcon?: string
+  cornerIcon?: string
   audit_log_retention_days: number
   session_log_retention_days: number
+  service_name: string
+  site_icon: string
+  corner_icon: string
 }
 
 export interface ListSessionsReply {

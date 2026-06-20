@@ -11,6 +11,9 @@ import RolesPage from './pages/admin/RolesPage'
 import PermissionsPage from './pages/admin/PermissionsPage'
 import SSOPage from './pages/admin/SSOPage'
 import ProfilePage from './pages/admin/ProfilePage'
+import SessionsPage from './pages/admin/SessionsPage'
+import AuditLogsPage from './pages/admin/AuditLogsPage'
+import SettingsPage from './pages/admin/SettingsPage'
 
 const SVC = '/temperate.v1.TemperateService'
 
@@ -55,6 +58,30 @@ export const router = createBrowserRouter([
         element: (
           <PermissionRoute operation={`${SVC}/ListSSOProviders`}>
             <SSOPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'sessions',
+        element: (
+          <PermissionRoute operation={`${SVC}/ListSessions`}>
+            <SessionsPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'audit-logs',
+        element: (
+          <PermissionRoute operation={`${SVC}/ListAuditLogs`}>
+            <AuditLogsPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <PermissionRoute operation={`${SVC}/GetSystemSettings`}>
+            <SettingsPage />
           </PermissionRoute>
         ),
       },

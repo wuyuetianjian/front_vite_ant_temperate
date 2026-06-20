@@ -181,7 +181,7 @@ export default function RolesPage() {
 
       <Table
         rowKey="id" columns={columns} dataSource={roles} loading={loading}
-        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }) }}
+        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }), styles: { item: { borderRadius: 999 } } }}
         style={{ borderRadius: 12, overflow: 'hidden' }}
       />
 

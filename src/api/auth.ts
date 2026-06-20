@@ -12,4 +12,6 @@ export const authApi = {
     client.post('/v1/auth/change-password', { old_password, new_password }),
 
   me: () => client.get<User>('/v1/auth/me').then((r) => r.data),
+
+  logout: (body?: { detail?: string }) => client.post('/v1/auth/logout', body ?? {}),
 }

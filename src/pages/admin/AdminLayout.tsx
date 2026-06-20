@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import {
-  Avatar, Button, Dropdown, Layout, Menu, Space, Typography,
+  Avatar, Button, Dropdown, Layout, Menu, Space, Typography, notification,
   theme as antdTheme, type MenuProps,
 } from 'antd'
 import {
@@ -14,7 +14,10 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/auth'
 import { useThemeStore, type ThemeMode } from '../../store/theme'
 import ChangePasswordModal from '../../components/ChangePasswordModal'
-import config from '../../config'
+import { useSessionWS } from '../../hooks/useSessionWS'
+import { authApi } from '../../api/auth'
+import { sessionsApi } from '../../api/sessions'
+import { isCustomIcon, useSystemSettingsStore } from '../../store/systemSettings'
 
 const { Sider, Header, Content } = Layout
 
@@ -26,15 +29,43 @@ export default function AdminLayout() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, clearAuth, hasPermission } = useAuthStore()
+  const { user, token: authToken, clearAuth, hasPermission } = useAuthStore()
   const { mode, setMode, resolved } = useThemeStore()
+  const systemSettings = useSystemSettingsStore((s) => s.settings)
   const [collapsed, setCollapsed] = useState(false)
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const handleKicked = useCallback(() => {
+    // session already invalidated server-side; fire logout for audit log, ignore errors
+    authApi.logout().catch(() => {})
+    clearAuth()
+    notification.warning({
+      message: t('sessions.kickedTitle'),
+      description: t('sessions.kickedMessage'),
+      duration: 4,
+    })
+    navigate('/login', { replace: true })
+  }, [clearAuth, navigate, t])
+
+  useSessionWS({ token: authToken, onKicked: handleKicked })
 
   const isDark = resolved() === 'dark'
   const { token } = antdTheme.useToken()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const res = await sessionsApi.list({ username: user?.username })
+      const session = res.sessions?.find((s) => s.status === 'active')
+      let detail = `logout for "${user?.username ?? ''}"`
+      if (session?.login_at) {
+        const loginTime = new Date(session.login_at)
+        const durationMs = Date.now() - loginTime.getTime()
+        const h = Math.floor(durationMs / 3_600_000)
+        const m = Math.floor((durationMs % 3_600_000) / 60_000)
+        const duration = h > 0 ? `${h}h ${m}m` : `${m}m`
+        detail += ` · 登录时间: ${loginTime.toLocaleString()} · 在线: ${duration} · 客户端: ${session.ip}`
+      }
+      await authApi.logout({ detail })
+    } catch { /* ignore — local logout still proceeds */ }
     clearAuth()
     navigate('/login', { replace: true })
   }
@@ -166,15 +197,20 @@ export default function AdminLayout() {
         >
           <div style={{
             width: 30, height: 30, borderRadius: 10, flexShrink: 0,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            background: isCustomIcon(systemSettings.corner_icon) ? 'rgba(255,255,255,0.72)' : 'linear-gradient(135deg, #3b82f6, #60a5fa)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px var(--glass-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25)',
+            overflow: 'hidden',
           }}>
-            <AppstoreOutlined style={{ color: '#fff', fontSize: 14 }} />
+            {isCustomIcon(systemSettings.corner_icon) ? (
+              <img src={systemSettings.corner_icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <AppstoreOutlined style={{ color: '#fff', fontSize: 14 }} />
+            )}
           </div>
           {!collapsed && (
             <Typography.Text strong ellipsis style={{ fontSize: 15, color: 'var(--glass-text-primary)' }}>
-              {config.appName}
+              {systemSettings.service_name}
             </Typography.Text>
           )}
         </div>
@@ -283,6 +319,7 @@ export default function AdminLayout() {
         onSuccess={() => setChangePasswordOpen(false)}
         onCancel={() => setChangePasswordOpen(false)}
       />
+
     </Layout>
   )
 }

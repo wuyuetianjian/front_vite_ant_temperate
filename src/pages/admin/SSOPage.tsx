@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import {
-  Alert, Badge, Button, Card, Col, Divider, Form, Input, Modal,
+  Alert, Button, Card, Col, Divider, Form, Input, Modal,
   Popconfirm, Radio, Row, Select, Space, Switch, Table, Tag, Typography,
   message, type TableProps,
 } from 'antd'
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, ApiOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined,
   CheckCircleOutlined, StopOutlined,
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +22,7 @@ type ProviderType = SSOProvider['type']
 const TYPE_LABELS: Record<ProviderType, { label: string; color: string }> = {
   oauth1:  { label: 'OAuth 1.0', color: 'geekblue' },
   oauth2:  { label: 'OAuth 2.0', color: 'blue' },
-  oidc:    { label: 'OIDC',      color: 'purple' },
+  oidc:    { label: 'OIDC',      color: 'blue' },
   saml1:   { label: 'SAML 1.0', color: 'orange' },
   saml2:   { label: 'SAML 2.0', color: 'volcano' },
   ldap:    { label: 'LDAP',     color: 'cyan' },
@@ -318,7 +318,7 @@ export default function SSOPage() {
         style={{ marginBottom: 16, borderRadius: 8 }}
       />
 
-      <Divider orientation="left" style={{ marginTop: 0 }}>
+      <Divider style={{ marginTop: 0 }}>
         <Text type="secondary" style={{ fontSize: 13 }}>{t('sso.externalProviders')}</Text>
       </Divider>
 

@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
-        '/v1': { target: backendUrl, changeOrigin: true },
+        '/v1': { target: backendUrl, changeOrigin: true, ws: true },
         '/health': { target: backendUrl, changeOrigin: true },
       },
     },

@@ -83,11 +83,36 @@ export default function UsersPage() {
           role_ids: values.role_ids ?? [],
         })
       } else if (editing) {
+        const beforeRoles = (editing.roles ?? [])
+          .filter((r) => r.name !== '_effective').map((r) => r.name).sort()
+        const afterRoles = roles
+          .filter((r) => (values.role_ids ?? []).includes(r.id)).map((r) => r.name).sort()
+        const before: Record<string, unknown> = {
+          display_name: editing.display_name ?? '',
+          disabled: editing.disabled ?? false,
+          roles: beforeRoles,
+        }
+        const after: Record<string, unknown> = {
+          display_name: values.display_name ?? '',
+          disabled: values.disabled ?? false,
+          roles: afterRoles,
+        }
+        const diffBefore: Record<string, unknown> = {}
+        const diffAfter: Record<string, unknown> = {}
+        for (const k of Object.keys(before)) {
+          if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) {
+            diffBefore[k] = before[k]
+            diffAfter[k] = after[k]
+          }
+        }
+        const detail = Object.keys(diffBefore).length > 0
+          ? JSON.stringify({ before: diffBefore, after: diffAfter })
+          : undefined
         await usersApi.update(editing.id, {
           display_name: values.display_name,
           disabled: values.disabled,
           role_ids: values.role_ids ?? [],
-        })
+        }, detail)
       }
       message.success(t('common.success'))
       setModalOpen(false)
@@ -167,7 +192,7 @@ export default function UsersPage() {
         columns={columns}
         dataSource={users}
         loading={loading}
-        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }) }}
+        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }), styles: { item: { borderRadius: 999 } } }}
         bordered={false}
         style={{ borderRadius: 12, overflow: 'hidden' }}
       />

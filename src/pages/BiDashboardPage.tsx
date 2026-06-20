@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Avatar, Button, Dropdown } from 'antd'
 import { UserOutlined, LoginOutlined, DashboardOutlined, KeyOutlined, LogoutOutlined } from '@ant-design/icons'
 import { useAuthStore } from '../store/auth'
+import { authApi } from '../api/auth'
 
 // ── Fake data ──────────────────────────────────────────────────────────────
-const HOURS = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22']
 const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 
 const baseUv = [120, 180, 140, 320, 410, 390, 520, 480, 610, 540, 700, 660]
@@ -14,7 +14,7 @@ const baseReq = [24, 38, 29, 55, 72, 68, 91, 84, 107, 94, 122, 115]
 
 const regionData = [
   { name: '华东', value: 38, color: '#00d4ff' },
-  { name: '华南', value: 22, color: '#7c3aed' },
+  { name: '华南', value: 22, color: '#3b82f6' },
   { name: '华北', value: 19, color: '#10b981' },
   { name: '西南', value: 12, color: '#f59e0b' },
   { name: '其他', value: 9, color: '#ec4899' },
@@ -146,7 +146,7 @@ function GlassCard({ title, children, style }: { title?: string; children: React
     }}>
       {title && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 3, height: 14, background: 'linear-gradient(180deg,#00d4ff,#6366f1)', borderRadius: 2 }} />
+          <div style={{ width: 3, height: 14, background: 'linear-gradient(180deg,#00d4ff,#3b82f6)', borderRadius: 2 }} />
           <span style={{ fontSize: 12, fontWeight: 600, color: '#94b8d4', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{title}</span>
         </div>
       )}
@@ -246,7 +246,7 @@ export default function BiDashboardPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 2 }}>
             {['●', '◆', '●'].map((s, i) => (
-              <span key={i} style={{ fontSize: 6, color: i === 1 ? '#6366f1' : '#00d4ff', opacity: 0.7 }}>{s}</span>
+              <span key={i} style={{ fontSize: 6, color: i === 1 ? '#3b82f6' : '#00d4ff', opacity: 0.7 }}>{s}</span>
             ))}
           </div>
         </div>
@@ -282,14 +282,18 @@ export default function BiDashboardPage() {
                     icon: <LogoutOutlined />,
                     label: '退出登录',
                     danger: true,
-                    onClick: () => { clearAuth(); navigate('/login') },
+                    onClick: async () => {
+                      try { await authApi.logout() } catch { /* local logout still proceeds */ }
+                      clearAuth()
+                      navigate('/login')
+                    },
                   },
                 ],
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                 <Avatar size={30} icon={<UserOutlined />}
-                  style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', flexShrink: 0 }} />
+                  style={{ background: 'linear-gradient(135deg,#3b82f6,#60a5fa)', flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: '#a0c4e8', userSelect: 'none' }}>
                   {user?.display_name || user?.username}
                 </span>
@@ -327,14 +331,14 @@ export default function BiDashboardPage() {
         <KpiCard label="累计用户数" value={kpiUsers.toLocaleString()} delta="+3 今日" color="#00d4ff" sub="↑12.4% 较上月" />
         <KpiCard label="当前在线" value={kpiOnline} unit="人" delta={`${kpiOnline > 847 ? '+' : ''}${kpiOnline - 847}`} color="#10b981" sub="实时更新" />
         <KpiCard label="今日请求量" value={kpiReq} unit="万次" delta="+5.8%" color="#f59e0b" sub="API 调用" />
-        <KpiCard label="系统可用率" value={kpiRate} unit="%" delta="+0.1%" color="#7c3aed" sub="近30天均值" />
+        <KpiCard label="系统可用率" value={kpiRate} unit="%" delta="+0.1%" color="#3b82f6" sub="近30天均值" />
 
         {/* Row 2 col 1: UV trend */}
         <GlassCard title="访问趋势 (UV/PV)" style={{ gridColumn: 1, gridRow: 2 }}>
           <LineChart data={lineDataRef.current} color="#00d4ff" id="uv" />
-          <LineChart data={basePv} color="#7c3aed" id="pv" h={60} />
+          <LineChart data={basePv} color="#3b82f6" id="pv" h={60} />
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-            {[{ c: '#00d4ff', l: 'UV' }, { c: '#7c3aed', l: 'PV' }].map(x => (
+            {[{ c: '#00d4ff', l: 'UV' }, { c: '#3b82f6', l: 'PV' }].map(x => (
               <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 20, height: 2, background: x.c, borderRadius: 1 }} />
                 <span style={{ fontSize: 10, color: '#6b8aa8' }}>{x.l}</span>
@@ -350,7 +354,7 @@ export default function BiDashboardPage() {
               { label: '角色总数', value: 12, color: '#10b981', desc: '系统权限角色' },
               { label: '权限条目', value: 68, color: '#f59e0b', desc: '细粒度权限' },
               { label: '活跃会话', value: kpiOnline, color: '#00d4ff', desc: '并发在线' },
-              { label: '今日登录', value: 284 + tick, color: '#7c3aed', desc: '成功次数' },
+              { label: '今日登录', value: 284 + tick, color: '#3b82f6', desc: '成功次数' },
             ].map((m) => (
               <div key={m.label} style={{ textAlign: 'center', padding: '8px 16px',
                 background: 'rgba(0,0,0,0.25)', borderRadius: 10,
@@ -398,7 +402,7 @@ export default function BiDashboardPage() {
                   <div style={{ flex: 1, height: 10, background: 'rgba(255,255,255,0.05)', borderRadius: 5, overflow: 'hidden' }}>
                     <div style={{
                       width: `${pct}%`, height: '100%', borderRadius: 5,
-                      background: `linear-gradient(90deg, #6366f1, #00d4ff)`,
+                      background: `linear-gradient(90deg, #3b82f6, #00d4ff)`,
                       boxShadow: '0 0 6px rgba(0,212,255,0.4)',
                     }} />
                   </div>
@@ -432,7 +436,7 @@ export default function BiDashboardPage() {
             <div style={{ display: 'flex', gap: 16 }}>
               {[
                 { label: 'CPU', value: `${32 + (tick % 8)}%`, color: '#00d4ff' },
-                { label: 'MEM', value: `${61 + (tick % 4)}%`, color: '#7c3aed' },
+                { label: 'MEM', value: `${61 + (tick % 4)}%`, color: '#3b82f6' },
               ].map((s) => (
                 <div key={s.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</div>

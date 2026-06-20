@@ -1,5 +1,6 @@
 import axios from 'axios'
 import config from '../config'
+import { resetAuth } from '../store/auth'
 
 const client = axios.create({
   baseURL: config.apiBaseUrl,
@@ -17,11 +18,9 @@ client.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
-      // avoid import cycle — use window.location instead of router
+      resetAuth()
       if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login'
+        window.location.replace('/login')
       }
     }
     return Promise.reject(err)

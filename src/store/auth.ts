@@ -61,6 +61,11 @@ export const useAuthStore = create<AuthState>()(
   ),
 )
 
+export function resetAuth() {
+  useAuthStore.getState().clearAuth()
+  localStorage.removeItem('auth_token')
+}
+
 // keep localStorage in sync for the axios interceptor
 useAuthStore.subscribe((state) => {
   if (state.token) {

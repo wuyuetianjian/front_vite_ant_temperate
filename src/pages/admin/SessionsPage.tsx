@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
-  Button, Popconfirm, Space, Table, Tag, Typography, message, type TableProps,
+  Button, Input, Popconfirm, Space, Table, Tag, Typography, message, type TableProps,
 } from 'antd'
 import { StopOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +8,8 @@ import { sessionsApi } from '../../api/sessions'
 import { apiError } from '../../api/client'
 import config from '../../config'
 import type { UserSession } from '../../types'
+
+const REFRESH_INTERVAL = 30_000
 
 const formatTime = (value: string | null | undefined): string => {
   if (!value) return '—'
@@ -21,14 +23,18 @@ export default function SessionsPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [username, setUsername] = useState('')
 
   const pageSize = config.defaultPageSize
 
-  const load = async (p = page) => {
+  const load = async (p = page, user = username) => {
     setLoading(true)
     try {
-      const res = await sessionsApi.list({ page_size: pageSize, page_token: (p - 1) * pageSize })
-      // Only show active sessions — kicked/expired belong in audit logs
+      const res = await sessionsApi.list({
+        page_size: pageSize,
+        page_token: (p - 1) * pageSize,
+        ...(user ? { username: user } : {}),
+      })
       const active = (res.sessions ?? []).filter((s) => s.status === 'active')
       setSessions(active)
       setTotal(res.total ?? 0)
@@ -39,9 +45,30 @@ export default function SessionsPage() {
 
   useEffect(() => { load() }, [page])
 
-  const handleKick = async (id: number) => {
+  // auto-refresh every 30s
+  const loadRef = useRef(load)
+  loadRef.current = load
+  useEffect(() => {
+    const id = setInterval(() => loadRef.current(), REFRESH_INTERVAL)
+    return () => clearInterval(id)
+  }, [])
+
+  const handleSearch = (value: string) => {
+    setPage(1)
+    load(1, value)
+  }
+
+  const handleKick = async (record: UserSession) => {
     try {
-      await sessionsApi.kick(id)
+      const parts: string[] = [`kicked session for "${record.username}"`]
+      if (record.ip)       parts.push(`客户端: ${record.ip}`)
+      if (record.browser)  parts.push(`浏览器: ${record.browser}`)
+      if (record.os)       parts.push(`OS: ${record.os}`)
+      if (record.login_at) parts.push(`登录时间: ${new Date(record.login_at).toLocaleString()}`)
+      await sessionsApi.kick(record.id, {
+        detail: parts.join(' · '),
+        resource_name: record.username,
+      })
       message.success(t('common.success'))
       load()
     } catch (err) {
@@ -84,7 +111,7 @@ export default function SessionsPage() {
       render: (_, record) => (
         <Popconfirm
           title={t('sessions.kickConfirm')}
-          onConfirm={() => handleKick(record.id)}
+          onConfirm={() => handleKick(record)}
         >
           <Button type="text" size="small" danger icon={<StopOutlined />}>
             {t('sessions.kick')}
@@ -98,7 +125,17 @@ export default function SessionsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>{t('sessions.title')}</Typography.Title>
-        <Button icon={<ReloadOutlined />} onClick={() => load()}>{t('common.search')}</Button>
+        <Space>
+          <Input.Search
+            allowClear
+            placeholder={t('sessions.filterUser')}
+            style={{ width: 200 }}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onSearch={handleSearch}
+          />
+          <Button icon={<ReloadOutlined />} onClick={() => load()}>{t('common.refresh')}</Button>
+        </Space>
       </div>
 
       <Table
@@ -110,8 +147,9 @@ export default function SessionsPage() {
           current: page,
           pageSize,
           total,
-          onChange: setPage,
+          onChange: (p) => { setPage(p); load(p) },
           showTotal: (n) => t('common.total', { count: n }),
+          styles: { item: { borderRadius: 999 } },
         }}
         bordered={false}
         style={{ borderRadius: 12, overflow: 'hidden' }}

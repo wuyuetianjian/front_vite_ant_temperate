@@ -78,7 +78,7 @@ export default function PermissionsPage() {
     },
     {
       title: t('permissions.action'), dataIndex: 'action', width: 120,
-      render: (v) => <Tag color="purple">{v}</Tag>,
+      render: (v) => <Tag color="blue">{v}</Tag>,
     },
     { title: t('permissions.operation'), dataIndex: 'operation', ellipsis: true,
       render: (v) => v || <Typography.Text type="secondary">—</Typography.Text> },
@@ -122,7 +122,7 @@ export default function PermissionsPage() {
 
       <Table
         rowKey="id" columns={columns} dataSource={permissions} loading={loading}
-        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }) }}
+        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }), styles: { item: { borderRadius: 999 } } }}
         style={{ borderRadius: 12, overflow: 'hidden' }}
       />
 

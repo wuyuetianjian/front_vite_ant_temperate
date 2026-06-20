@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/auth'
 import { apiError } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import config from '../config'
+import { useSystemSettingsStore } from '../store/systemSettings'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -30,6 +30,7 @@ export default function SetupPage() {
   const location = useLocation()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const { token } = antdTheme.useToken()
+  const serviceName = useSystemSettingsStore((s) => s.settings.service_name)
 
   const [form] = Form.useForm<FormValues>()
   const [loading, setLoading] = useState(false)
@@ -117,7 +118,7 @@ export default function SetupPage() {
     }}>
       {/* Branding */}
       <Space align="center" style={{ marginBottom: 32 }}>
-        <Text strong style={{ fontSize: 18 }}>{config.appName}</Text>
+        <Text strong style={{ fontSize: 18 }}>{serviceName}</Text>
       </Space>
 
       <Card

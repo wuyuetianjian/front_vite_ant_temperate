@@ -10,8 +10,8 @@ export const usersApi = {
   create: (data: { username: string; password: string; display_name?: string; disabled?: boolean; role_ids?: number[] }) =>
     client.post<User>('/v1/users', data).then((r) => r.data),
 
-  update: (id: number, data: { display_name?: string; disabled?: boolean; role_ids?: number[] }) =>
-    client.patch<User>(`/v1/users/${id}`, data).then((r) => r.data),
+  update: (id: number, data: { display_name?: string; disabled?: boolean; role_ids?: number[] }, detail?: string) =>
+    client.patch<User>(`/v1/users/${id}`, detail ? { ...data, detail } : data).then((r) => r.data),
 
   delete: (id: number) => client.delete(`/v1/users/${id}`),
 
