@@ -1,75 +1,78 @@
-# Temperate — 前端
+# Temperate — Frontend
 
-基于 React 19 + TypeScript + Vite 构建，使用 Ant Design 组件库，配套 [temperate 后端](../goprojection/temperate)。
+React 19 + TypeScript + Vite frontend for the Temperate platform, built with Ant Design.
 
----
+**Backend repository:** [kratos-template-for-all](https://github.com/wuyuetianjian/kratos-template-for-all.git)
 
-## 目录
-
-- [本地开发](#本地开发)
-- [配置说明](#配置说明)
-- [Docker 部署](#docker-部署)
-- [配置参考](#配置参考)
+> 中文文档请见 [README.zh.md](./README.zh.md)
 
 ---
 
-## 本地开发
+## Table of Contents
+
+- [Local Development](#local-development)
+- [Configuration](#configuration)
+- [Docker Deployment](#docker-deployment)
+- [Configuration Reference](#configuration-reference)
+
+---
+
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-开发服务器默认启动在 `http://localhost:5173`。`/v1` 和 `/health` 请求会被 Vite 代理到后端（见 `vite.config.ts`）。
+The dev server starts at `http://localhost:5173`. All `/v1` and `/health` requests are proxied to the backend by Vite (see `vite.config.ts`).
 
-**开发环境变量**（`.env` 文件，不提交到版本库）：
+**Dev environment variables** (`.env` file, never commit):
 
 ```env
-# 后端地址，仅用于 Vite 开发代理
+# Backend address used by the Vite dev proxy
 BACKEND_URL=http://localhost:8000
 
-# 若不走 Vite 代理，可直接指定 API 地址（可选）
+# Override the API base URL if not using the Vite proxy (optional)
 # VITE_API_BASE_URL=http://localhost:8000
 ```
 
 ---
 
-## 配置说明
+## Configuration
 
-所有运行时配置通过 `src/config.ts` 统一读取，优先级由高到低：
+All runtime configuration is read through `src/config.ts`. Priority from highest to lowest:
 
-| 优先级 | 来源 | 说明 |
-|--------|------|------|
-| 1 | `window.__APP_CONFIG__` | 容器启动时由 `docker/entrypoint.sh` 注入到 `/config.js` |
-| 2 | `VITE_*` 构建变量 | `npm run build` 时烧入 bundle，用于本地开发 |
-| 3 | 代码默认值 | 兜底值 |
+| Priority | Source | Description |
+|----------|--------|-------------|
+| 1 | `window.__APP_CONFIG__` | Injected into `/config.js` at container startup by `docker/entrypoint.sh` |
+| 2 | `VITE_*` build vars | Baked into the bundle at build time; used for local dev |
+| 3 | Code defaults | Fallback values |
 
-`src/config.ts` 暴露的字段：
+Fields exposed by `src/config.ts`:
 
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `apiBaseUrl` | `string` | `''` | API 基础地址，留空则走 Nginx 反向代理 |
-| `appName` | `string` | `'Temperate'` | 应用名称 |
-| `defaultPageSize` | `number` | `20` | 列表分页大小（仅代码常量） |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `apiBaseUrl` | `string` | `''` | Axios base URL; leave empty to let Nginx proxy handle routing |
+| `appName` | `string` | `'Temperate'` | Application name shown in the UI |
+| `defaultPageSize` | `number` | `20` | Default page size for list views (code constant) |
 
-> **推荐**：生产环境 `apiBaseUrl` 保持空字符串，让 Nginx 代理 `/v1` 到后端，避免跨域。
+> **Recommendation:** Keep `apiBaseUrl` empty in production and let Nginx proxy `/v1` to the backend to avoid CORS issues.
 
 ---
 
-## Docker 部署
+## Docker Deployment
 
-### 构建镜像
+### Build the image
 
 ```bash
 docker build -t temperate-web .
 ```
 
-构建过程：
-1. Node 22 Alpine 安装依赖并执行 `npm run build`
-2. Nginx 1.27 Alpine 接收静态产物
-3. 容器启动时 `docker/entrypoint.sh` 根据环境变量生成 `/config.js` 和 Nginx 配置
+Build stages:
+1. **Node 22 Alpine** — installs dependencies and runs `npm run build`
+2. **Nginx 1.27 Alpine** — serves the static output; `docker/entrypoint.sh` generates `/config.js` and the Nginx config from environment variables at container startup
 
-### 运行容器
+### Run the container
 
 ```bash
 docker run -d \
@@ -79,7 +82,7 @@ docker run -d \
   temperate-web
 ```
 
-### 使用 Docker Compose
+### Docker Compose
 
 ```yaml
 services:
@@ -90,55 +93,55 @@ services:
     environment:
       BACKEND_URL: http://backend:8000
       APP_NAME: Temperate
-      # API_BASE_URL: ""  # 留空走 Nginx 代理（推荐）
+      # API_BASE_URL: ""   # leave empty to use Nginx proxy (recommended)
     depends_on:
       - backend
 
   backend:
-    image: temperate-backend
+    image: temperate-backend   # see backend repo
     ports:
       - "8000:8000"
 ```
 
 ---
 
-## 配置参考
+## Configuration Reference
 
-### 容器环境变量
+### Container environment variables
 
-所有配置均通过环境变量注入，无需重新构建镜像。
+All configuration is injected via environment variables — no image rebuild needed.
 
-| 变量 | 必填 | 默认值 | 说明 |
-|------|------|--------|------|
-| `BACKEND_URL` | 是 | `http://backend:8000` | 后端服务地址，Nginx 用于反向代理 `/v1` 和 `/health` |
-| `APP_NAME` | 否 | `Temperate` | 显示在页面标题和品牌处的应用名称 |
-| `API_BASE_URL` | 否 | `''`（空） | 前端 axios 的 `baseURL`，留空则请求走相对路径由 Nginx 代理 |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `BACKEND_URL` | Yes | `http://backend:8000` | Backend service URL; used by Nginx to proxy `/v1` and `/health` |
+| `APP_NAME` | No | `Temperate` | Application name displayed in the UI |
+| `API_BASE_URL` | No | `''` (empty) | Axios `baseURL`; leave empty to route through Nginx proxy |
 
-### 本地开发环境变量（`.env`）
+### Local dev environment variables (`.env`)
 
-| 变量 | 说明 |
-|------|------|
-| `BACKEND_URL` | Vite 开发代理的后端地址 |
-| `VITE_API_BASE_URL` | 不走 Vite 代理时的 API 地址（可选） |
-| `VITE_APP_NAME` | 本地开发时的应用名称（可选） |
+| Variable | Description |
+|----------|-------------|
+| `BACKEND_URL` | Backend address for the Vite dev proxy |
+| `VITE_API_BASE_URL` | API base URL when not using the Vite proxy (optional) |
+| `VITE_APP_NAME` | App name override for local development (optional) |
 
-### 相关文件
+### Related files
 
-| 文件 | 说明 |
-|------|------|
-| `src/config.ts` | 统一配置入口，所有模块通过此文件读取配置 |
-| `docker/entrypoint.sh` | 容器启动脚本：生成 `config.js` + 渲染 Nginx 模板 |
-| `docker/nginx.conf.template` | Nginx 配置模板，`${BACKEND_URL}` 在启动时替换 |
-| `vite.config.ts` | Vite 配置，包含开发代理规则 |
-| `.env` | 本地开发环境变量（不提交） |
+| File | Description |
+|------|-------------|
+| `src/config.ts` | Central config entry point — all modules read configuration from here |
+| `docker/entrypoint.sh` | Container startup script: generates `config.js` and renders the Nginx template |
+| `docker/nginx.conf.template` | Nginx config template; `${BACKEND_URL}` is substituted at startup |
+| `vite.config.ts` | Vite config including dev proxy rules |
+| `.env` | Local dev environment variables (not committed) |
 
 ---
 
-## 构建命令
+## Scripts
 
 ```bash
-npm run dev      # 启动开发服务器（HMR）
-npm run build    # TypeScript 检查 + Vite 生产构建，产物在 dist/
-npm run preview  # 本地预览生产构建
-npm run lint     # ESLint 检查
+npm run dev      # Start dev server with HMR
+npm run build    # Type-check + Vite production build (output in dist/)
+npm run preview  # Locally preview the production build
+npm run lint     # Run ESLint
 ```
