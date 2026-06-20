@@ -12,8 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Claude Code internal state
+# Tool / IDE internal state (not project files)
 .claude/
+.superpowers/
 
 # Editor directories and files
 .vscode/*
