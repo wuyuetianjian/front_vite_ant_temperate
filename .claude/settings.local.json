@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "Bash(node *)",
+      "Bash(curl *)",
+      "Bash(npx tsc *)",
+      "Bash(npm install *)",
+      "Bash(xargs ls -la)",
+      "Bash(git -C /Users/sunny/front/temperate log --oneline -10)"
+    ]
+  }
+}

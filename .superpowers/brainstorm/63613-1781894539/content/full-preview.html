@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录页 - 磨砂玻璃风格预览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; background: #060818; }
+
+  .login-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 20% 50%, #0f1535 0%, #060818 60%);
+  }
+
+  /* ── 背景光晕 ── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(90px);
+    z-index: 0;
+  }
+  .orb-1 { width: 500px; height: 500px; background: rgba(99,102,241,0.18); top: -120px; left: 5%; }
+  .orb-2 { width: 380px; height: 380px; background: rgba(139,92,246,0.14); bottom: -60px; left: 25%; }
+  .orb-3 { width: 280px; height: 280px; background: rgba(6,182,212,0.10); top: 35%; right: 5%; }
+  .orb-4 { width: 200px; height: 200px; background: rgba(236,72,153,0.08); bottom: 10%; right: 30%; }
+
+  /* ── 品牌面板 ── */
+  .brand-panel {
+    position: relative;
+    z-index: 1;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    backdrop-filter: blur(10px);
+  }
+
+  .brand-name {
+    color: #f1f5f9;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  /* ── 角色区域 ── */
+  .visual-stage {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 420px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .characters {
+    position: relative;
+    width: 460px;
+    height: 360px;
+  }
+
+  .char {
+    position: absolute;
+    bottom: 0;
+    border-radius: 10px 10px 0 0;
+  }
+
+  /* 紫色角色 */
+  .char-purple {
+    left: 60px; width: 160px; height: 310px;
+    background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -8px 40px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+
+  /* 黑色角色 */
+  .char-black {
+    left: 200px; width: 110px; height: 280px;
+    background: linear-gradient(180deg, #1e1e2e 0%, #0f0f1a 100%);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  /* 橙色角色 */
+  .char-orange {
+    left: -10px; width: 220px; height: 185px;
+    background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+    border-radius: 110px 110px 0 0;
+    box-shadow: 0 -6px 30px rgba(249,115,22,0.3);
+  }
+
+  /* 黄色角色 */
+  .char-yellow {
+    left: 285px; width: 130px; height: 215px;
+    background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+    border-radius: 65px 65px 0 0;
+    box-shadow: 0 -6px 24px rgba(245,158,11,0.28);
+  }
+
+  /* 眼睛 */
+  .eyes {
+    position: absolute;
+    display: flex;
+    gap: 20px;
+  }
+  .eye {
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pupil {
+    width: 7px; height: 7px;
+    background: #1e1b4b;
+    border-radius: 50%;
+  }
+
+  /* 地面光晕 */
+  .ground-glow {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 340px; height: 30px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.25) 0%, transparent 70%);
+    filter: blur(8px);
+  }
+
+  .legal-links {
+    display: flex;
+    gap: 28px;
+  }
+  .legal-links a {
+    color: rgba(148,163,184,0.45);
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  /* ── 分隔线 ── */
+  .divider {
+    position: absolute;
+    left: 50%; top: 10%; bottom: 10%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.07) 20%, rgba(255,255,255,0.07) 80%, transparent);
+    z-index: 2;
+  }
+
+  /* ── 表单面板 ── */
+  .form-panel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  /* ── 磨砂玻璃卡片 ── */
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 24px;
+    padding: 48px 40px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow:
+      0 32px 80px rgba(0,0,0,0.45),
+      0 0 0 1px rgba(255,255,255,0.04) inset,
+      0 1px 0 rgba(255,255,255,0.1) inset;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 卡片顶部光泽线 */
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  }
+
+  .login-heading {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .login-heading h1 {
+    color: #f8fafc;
+    font-size: 28px;
+    font-weight: 760;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .login-heading p {
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  /* ── 表单标签 ── */
+  .form-label {
+    display: block;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.1px;
+  }
+
+  /* ── 输入框 ── */
+  .mock-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 12px;
+    padding: 13px 16px;
+    color: #f8fafc;
+    font-size: 14px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .mock-input.focused {
+    border-color: rgba(99,102,241,0.6);
+    background: rgba(99,102,241,0.06);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+
+  .input-placeholder { color: #475569; font-size: 14px; }
+  .input-value { color: #e2e8f0; font-size: 14px; }
+
+  /* ── 表单行 ── */
+  .form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    margin-top: -4px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .mock-checkbox {
+    width: 16px; height: 16px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .form-row a {
+    color: #818cf8;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* ── 登录按钮 ── */
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    box-shadow:
+      0 8px 28px rgba(99,102,241,0.4),
+      0 1px 0 rgba(255,255,255,0.2) inset;
+    letter-spacing: 0.2px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    transform: skewX(-20deg);
+  }
+
+  /* ── 注册行 ── */
+  .signup-row {
+    text-align: center;
+    color: #475569;
+    font-size: 14px;
+  }
+
+  .signup-row a {
+    color: #818cf8;
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 4px;
+  }
+
+  /* ── 注释标签 ── */
+  .annotation {
+    position: absolute;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #a5b4fc;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .ann-line {
+    position: absolute;
+    background: rgba(99,102,241,0.3);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-page">
+  <!-- 背景光晕 -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+
+  <!-- 面板分隔线 -->
+  <div class="divider"></div>
+
+  <!-- 品牌面板 -->
+  <div class="brand-panel">
+    <div class="brand-link">
+      <div class="brand-mark">🧭</div>
+      <span class="brand-name">CareerCompass</span>
+    </div>
+
+    <div class="visual-stage">
+      <div class="characters">
+        <!-- 紫色角色 -->
+        <div class="char char-purple" style="height:310px;">
+          <div class="eyes" style="top:48px;left:32px;gap:24px;">
+            <div class="eye"><div class="pupil" style="background:#2d1b69;"></div></div>
+            <div class="eye"><div class="pupil" style="background:#2d1b69;"></div></div>
+          </div>
+        </div>
+        <!-- 黑色角色 -->
+        <div class="char char-black">
+          <div class="eyes" style="top:36px;left:20px;gap:20px;">
+            <div class="eye" style="width:14px;height:14px;"><div class="pupil" style="width:6px;height:6px;"></div></div>
+            <div class="eye" style="width:14px;height:14px;"><div class="pupil" style="width:6px;height:6px;"></div></div>
+          </div>
+        </div>
+        <!-- 橙色角色 -->
+        <div class="char char-orange" style="border-radius:110px 110px 0 0;">
+          <div class="eyes" style="top:72px;left:52px;gap:28px;">
+            <div class="eye" style="width:12px;height:12px;background:#fff3e8;"><div class="pupil" style="width:5px;height:5px;background:#7c2d12;"></div></div>
+            <div class="eye" style="width:12px;height:12px;background:#fff3e8;"><div class="pupil" style="width:5px;height:5px;background:#7c2d12;"></div></div>
+          </div>
+        </div>
+        <!-- 黄色角色 -->
+        <div class="char char-yellow" style="border-radius:65px 65px 0 0;">
+          <div class="eyes" style="top:55px;left:28px;gap:22px;">
+            <div class="eye" style="width:11px;height:11px;background:#fef9c3;"><div class="pupil" style="width:5px;height:5px;background:#713f12;"></div></div>
+            <div class="eye" style="width:11px;height:11px;background:#fef9c3;"><div class="pupil" style="width:5px;height:5px;background:#713f12;"></div></div>
+          </div>
+          <!-- 嘴巴 -->
+          <div style="position:absolute;top:118px;left:24px;width:64px;height:3px;background:#92400e;border-radius:2px;opacity:0.7;"></div>
+        </div>
+        <!-- 地面光晕 -->
+        <div class="ground-glow"></div>
+      </div>
+    </div>
+
+    <div class="legal-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+
+  <!-- 表单面板 -->
+  <div class="form-panel">
+    <div class="login-box">
+
+      <div class="login-heading">
+        <h1>Welcome back!</h1>
+        <p>Please enter your details</p>
+      </div>
+
+      <div>
+        <label class="form-label">Username</label>
+        <div class="mock-input focused">
+          <span class="input-value">johndoe</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label">Password</label>
+        <div class="mock-input">
+          <span class="input-placeholder">••••••••</span>
+          <span style="color:#475569;font-size:13px;">👁</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="checkbox-label">
+          <div class="mock-checkbox"></div>
+          Remember for 30 days
+        </label>
+        <a href="#">Forgot password?</a>
+      </div>
+
+      <div class="login-btn">Log in</div>
+
+      <div class="signup-row">
+        Don't have an account?<a href="#">Sign Up</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 说明标注 -->
+<div style="position:fixed;bottom:20px;right:20px;background:rgba(6,8,24,0.85);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;backdrop-filter:blur(16px);max-width:280px;font-family:system-ui;">
+  <div style="color:#a5b4fc;font-size:12px;font-weight:700;margin-bottom:10px;letter-spacing:0.5px;">设计要点</div>
+  <div style="display:flex;flex-direction:column;gap:7px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;flex-shrink:0;"></div>
+      <span style="color:#cbd5e1;font-size:11px;">全局深色背景 + 紫蓝渐变光晕</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#8b5cf6;flex-shrink:0;"></div>
+      <span style="color:#cbd5e1;font-size:11px;">表单卡片磨砂玻璃 backdrop-blur</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#06b6d4;flex-shrink:0;"></div>
+      <span style="color:#cbd5e1;font-size:11px;">输入框半透明 + 聚焦时紫色辉光</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#f97316;flex-shrink:0;"></div>
+      <span style="color:#cbd5e1;font-size:11px;">角色底部环境光晕</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#ec4899;flex-shrink:0;"></div>
+      <span style="color:#cbd5e1;font-size:11px;">按钮渐变紫色 + 发光阴影</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
