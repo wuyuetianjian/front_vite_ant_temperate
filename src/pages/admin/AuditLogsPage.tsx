@@ -10,8 +10,8 @@ import AuditDetailPopover from '../../components/AuditDetailModal'
 import config from '../../config'
 import type { AuditLogEntry } from '../../types'
 
-const ADMIN_ACTIONS = ['create', 'update', 'delete', 'kick']
-const RESOURCE_TYPES = ['user', 'role', 'permission', 'session', 'sso_provider', 'settings']
+const ADMIN_ACTIONS = ['create', 'update', 'delete', 'kick', 'regenerate_token']
+const RESOURCE_TYPES = ['user', 'role', 'permission', 'session', 'service_account', 'sso_provider', 'settings']
 const LOGIN_ACTIONS = new Set(['login', 'logout'])
 
 const ACTION_META: Record<string, { label: string; color: string }> = {
@@ -21,6 +21,7 @@ const ACTION_META: Record<string, { label: string; color: string }> = {
   kick: { label: '踢出', color: 'orange' },
   login: { label: '登录', color: 'cyan' },
   logout: { label: '退出', color: 'default' },
+  regenerate_token: { label: '重置令牌', color: 'purple' },
 }
 
 const RESOURCE_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ const RESOURCE_LABELS: Record<string, string> = {
   role: '角色',
   permission: '权限',
   session: '在线会话',
+  service_account: '服务账号',
   sso_provider: '单点登录',
   settings: '系统设置',
 }
