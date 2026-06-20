@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Checkbox, ConfigProvider, Divider, Form, Input, Space, Typography, message, theme as antdTheme } from 'antd'
+import { Button, Checkbox, Divider, Form, Input, Space, Typography, message } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/auth'
 import { ssoApi } from '../api/sso'
@@ -260,20 +260,6 @@ interface LoginValues {
   remember?: boolean
 }
 
-const loginDarkTheme = {
-  algorithm: antdTheme.darkAlgorithm,
-  token: {
-    colorPrimary: '#6366f1',
-    colorInfo: '#6366f1',
-    borderRadius: 12,
-    fontFamily: 'Aptos, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  },
-  components: {
-    Button: { controlHeight: 48, borderRadius: 12, fontWeight: 650 },
-    Input: { controlHeight: 48, borderRadius: 12 },
-  },
-}
-
 export default function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -330,10 +316,8 @@ export default function LoginPage() {
     }
   }
 
-  const themeConfig = useMemo(() => loginDarkTheme, [])
-
   return (
-    <ConfigProvider theme={themeConfig}>
+    <>
       {contextHolder}
       <main className="login-page">
         <div className="bg-orb orb-1" aria-hidden="true" />
@@ -449,8 +433,8 @@ export default function LoginPage() {
             {ssoProviders.length > 0 && (
               <>
                 {localAuthEnabled && (
-                  <Divider style={{ margin: '20px 0 16px', borderColor: 'rgba(255,255,255,0.12)' }}>
-                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{t('sso.orLoginWith')}</Text>
+                  <Divider style={{ margin: '20px 0 16px', borderColor: 'var(--glass-border)' }}>
+                    <Text style={{ fontSize: 12, color: 'var(--glass-text-secondary)' }}>{t('sso.orLoginWith')}</Text>
                   </Divider>
                 )}
                 <Space direction="vertical" style={{ width: '100%' }} size={8}>
@@ -459,10 +443,6 @@ export default function LoginPage() {
                       key={p.id}
                       block
                       style={{
-                        background: 'rgba(255,255,255,0.06)',
-                        borderColor: 'rgba(255,255,255,0.15)',
-                        color: 'rgba(255,255,255,0.85)',
-                        borderRadius: 10,
                         height: 40,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       }}
@@ -480,7 +460,6 @@ export default function LoginPage() {
           </div>
         </section>
       </main>
-
-    </ConfigProvider>
+    </>
   )
 }

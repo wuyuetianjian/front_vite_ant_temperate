@@ -1,0 +1,360 @@
+/* ── ANT DESIGN LIQUID GLASS OVERRIDES ── */
+/* All values reference CSS variables — dark mode is automatic via [data-theme="dark"] */
+
+/* ── BUTTON ── */
+.ant-btn-default {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--glass-text-primary) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease !important;
+}
+.ant-btn-default:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.20) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+[data-theme="dark"] .ant-btn-default {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .ant-btn-default:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  border-color: transparent !important;
+  box-shadow:
+    0 4px 20px var(--glass-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+.ant-btn-primary:not(:disabled):hover {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%) !important;
+  box-shadow:
+    0 8px 28px var(--glass-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+  transform: translateY(-1px);
+}
+.ant-btn-text {
+  color: var(--glass-text-primary) !important;
+}
+.ant-btn-text:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+[data-theme="dark"] .ant-btn-text:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── CARD ── */
+.ant-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  border-radius: var(--glass-radius-lg) !important;
+}
+.ant-card-head {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-card-body {
+  color: var(--glass-text-primary);
+}
+
+/* ── TABLE ── */
+.ant-table-wrapper .ant-table {
+  background: transparent !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-table-wrapper .ant-table-container {
+  border-radius: var(--glass-radius-md) !important;
+  overflow: hidden;
+}
+.ant-table-wrapper .ant-table-thead > tr > th,
+.ant-table-wrapper .ant-table-thead > tr > td {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--glass-text-primary) !important;
+  backdrop-filter: blur(8px);
+}
+[data-theme="dark"] .ant-table-wrapper .ant-table-thead > tr > th {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: transparent !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td {
+  background: rgba(99, 102, 241, 0.10) !important;
+}
+.ant-table-wrapper .ant-pagination {
+  color: var(--glass-text-primary) !important;
+}
+
+/* ── MODAL ── */
+.ant-modal-mask {
+  background: rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+.ant-modal-content {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(64px) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(64px) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-lg) !important;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 var(--glass-specular) !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+.ant-modal-title {
+  color: var(--glass-text-primary) !important;
+}
+.ant-modal-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--glass-border) !important;
+}
+.ant-modal-close {
+  color: var(--glass-text-secondary) !important;
+}
+.ant-modal-close:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ── DROPDOWN / SELECT / PICKER POPUPS ── */
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-picker-dropdown .ant-picker-panel-container {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(48px) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-md) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+.ant-dropdown .ant-dropdown-menu-item,
+.ant-select-item {
+  color: var(--glass-text-primary) !important;
+}
+.ant-dropdown .ant-dropdown-menu-item:hover,
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+[data-theme="dark"] .ant-dropdown .ant-dropdown-menu-item:hover,
+[data-theme="dark"] .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.ant-dropdown .ant-dropdown-menu-item-selected,
+.ant-select-item-option-selected {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: var(--glass-accent) !important;
+  font-weight: 600;
+}
+.ant-dropdown-menu-item-divider {
+  background: var(--glass-border) !important;
+}
+
+/* ── FORM INPUTS (GLOBAL) ── */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select:not(.ant-select-disabled) .ant-select-selector,
+.ant-picker,
+.ant-input-number {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-input::placeholder,
+.ant-input-affix-wrapper input::placeholder {
+  color: var(--glass-text-secondary) !important;
+}
+.ant-input-affix-wrapper .ant-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--glass-text-primary) !important;
+}
+.ant-input:hover,
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled):hover,
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector,
+.ant-picker:hover {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.ant-input-affix-wrapper-focused,
+.ant-input:focus,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused,
+.ant-input-number-focused {
+  border-color: var(--glass-accent) !important;
+  box-shadow: 0 0 0 3px var(--glass-accent-glow) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.ant-input-number-handler-wrap {
+  background: transparent !important;
+}
+.ant-select-selection-placeholder {
+  color: var(--glass-text-secondary) !important;
+}
+.ant-select-arrow,
+.ant-picker-suffix,
+.ant-input-number-handler {
+  color: var(--glass-text-secondary) !important;
+}
+
+/* ── DRAWER ── */
+.ant-drawer-content {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
+  border-left: 1px solid var(--glass-border) !important;
+}
+.ant-drawer-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+.ant-drawer-title {
+  color: var(--glass-text-primary) !important;
+}
+.ant-drawer-mask {
+  backdrop-filter: blur(4px) !important;
+  background: rgba(0, 0, 0, 0.20) !important;
+}
+
+/* ── TAG ── */
+.ant-tag {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--glass-text-primary) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 999px !important;
+}
+[data-theme="dark"] .ant-tag {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── TOOLTIP ── */
+.ant-tooltip .ant-tooltip-inner {
+  background: rgba(15, 15, 25, 0.80) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  color: rgba(255, 255, 255, 0.90) !important;
+}
+.ant-tooltip .ant-tooltip-arrow::before {
+  background: rgba(15, 15, 25, 0.80) !important;
+}
+
+/* ── MENU (SIDEBAR) ── */
+.ant-menu {
+  background: transparent !important;
+  border-inline-end: none !important;
+}
+.ant-menu-item {
+  color: var(--glass-text-primary) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  margin-inline: 8px !important;
+  width: calc(100% - 16px) !important;
+}
+.ant-menu-item:hover,
+.ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: var(--glass-text-primary) !important;
+}
+[data-theme="dark"] .ant-menu-item:hover,
+[data-theme="dark"] .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+.ant-menu-item-selected {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: var(--glass-accent) !important;
+  border-left: 2px solid var(--glass-accent);
+}
+.ant-menu-item-selected a,
+.ant-menu-item-selected .anticon {
+  color: var(--glass-accent) !important;
+}
+.ant-menu-submenu-title {
+  color: var(--glass-text-primary) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  margin-inline: 8px !important;
+  width: calc(100% - 16px) !important;
+}
+.ant-menu-sub {
+  background: transparent !important;
+}
+
+/* ── POPCONFIRM / POPOVER ── */
+.ant-popover-content .ant-popover-inner {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(48px) saturate(var(--glass-saturate)) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(var(--glass-saturate)) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  border-radius: var(--glass-radius-md) !important;
+}
+.ant-popover-title {
+  color: var(--glass-text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+.ant-popover-inner-content,
+.ant-popconfirm-message-title {
+  color: var(--glass-text-primary) !important;
+}
+
+/* ── TABS ── */
+.ant-tabs-nav {
+  background: transparent !important;
+}
+.ant-tabs-tab {
+  color: var(--glass-text-secondary) !important;
+}
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--glass-accent) !important;
+}
+.ant-tabs-ink-bar {
+  background: var(--glass-accent) !important;
+}
+
+/* ── SPIN / LOADING ── */
+.ant-spin-dot-item {
+  background: var(--glass-accent) !important;
+}
+
+/* ── DIVIDER ── */
+.ant-divider {
+  border-color: var(--glass-border) !important;
+}
+
+/* ── BADGE ── */
+.ant-badge-count {
+  background: var(--glass-accent) !important;
+}
+
+/* ── FORM LABELS ── */
+.ant-form-item-label > label {
+  color: var(--glass-text-primary) !important;
+}
+.ant-form-item-explain-error {
+  color: #f87171 !important;
+}
+
+/* ── CHECKBOX ── */
+.ant-checkbox-wrapper {
+  color: var(--glass-text-secondary) !important;
+}

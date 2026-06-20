@@ -8,6 +8,7 @@ import {
   UserOutlined, TeamOutlined, SafetyOutlined, DashboardOutlined,
   LogoutOutlined, GlobalOutlined, MoonOutlined, SunOutlined, DesktopOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, KeyOutlined, AppstoreOutlined, ApartmentOutlined,
+  MonitorOutlined, FileSearchOutlined, SettingOutlined,
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/auth'
@@ -44,6 +45,9 @@ export default function AdminLayout() {
     if (p.startsWith('/admin/roles')) return 'roles'
     if (p.startsWith('/admin/permissions')) return 'permissions'
     if (p.startsWith('/admin/sso')) return 'sso'
+    if (p.startsWith('/admin/sessions')) return 'sessions'
+    if (p.startsWith('/admin/audit-logs')) return 'audit-logs'
+    if (p.startsWith('/admin/settings')) return 'settings'
     if (p.startsWith('/admin/profile')) return 'profile'
     return 'dashboard'
   })()
@@ -68,6 +72,21 @@ export default function AdminLayout() {
       key: 'sso',
       icon: <ApartmentOutlined />,
       label: <Link to="/admin/sso">{t('nav.sso')}</Link>,
+    },
+    hasPermission(`${SVC}/ListSessions`) && {
+      key: 'sessions',
+      icon: <MonitorOutlined />,
+      label: <Link to="/admin/sessions">{t('nav.sessions')}</Link>,
+    },
+    hasPermission(`${SVC}/ListAuditLogs`) && {
+      key: 'audit-logs',
+      icon: <FileSearchOutlined />,
+      label: <Link to="/admin/audit-logs">{t('nav.auditLogs')}</Link>,
+    },
+    hasPermission(`${SVC}/GetSystemSettings`) && {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: <Link to="/admin/settings">{t('nav.settings')}</Link>,
     },
   ].filter(Boolean) as MenuProps['items']
 
@@ -118,33 +137,18 @@ export default function AdminLayout() {
 
   const displayName = user?.display_name || user?.username || t('common.unknown')
 
-  // glassmorphism values by theme
-  const glassBg = isDark
-    ? 'rgba(12, 12, 28, 0.65)'
-    : 'rgba(255, 255, 255, 0.55)'
-  const glassBorder = isDark
-    ? '1px solid rgba(255, 255, 255, 0.07)'
-    : '1px solid rgba(200, 200, 220, 0.35)'
-  const headerGlassBg = isDark
-    ? 'rgba(12, 12, 28, 0.75)'
-    : 'rgba(255, 255, 255, 0.70)'
-
-  const layoutBg = isDark
-    ? 'linear-gradient(135deg, #0d0d1f 0%, #111827 50%, #0d1117 100%)'
-    : 'linear-gradient(135deg, #e8eaf6 0%, #f3f4fb 50%, #ede7f6 100%)'
-
   return (
-    <Layout style={{ minHeight: '100vh', background: layoutBg }}>
+    <Layout style={{ minHeight: '100vh', background: 'transparent', position: 'relative', zIndex: 2 }}>
       <Sider
         width={SIDER_WIDTH}
         collapsedWidth={SIDER_COLLAPSED_WIDTH}
         collapsed={collapsed}
+        className="glass"
         style={{
           position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100,
-          background: glassBg,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRight: glassBorder,
+          background: 'transparent',
+          borderRight: '1px solid var(--glass-border)',
+          borderRadius: 0,
           overflow: 'auto',
         }}
       >
@@ -154,21 +158,22 @@ export default function AdminLayout() {
           style={{
             height: 56, display: 'flex', alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? 0 : '0 20px', gap: 10,
-            borderBottom: glassBorder,
+            padding: collapsed ? 0 : '0 16px', gap: 10,
+            borderBottom: '1px solid var(--glass-border)',
             overflow: 'hidden',
             cursor: 'pointer',
           }}
         >
           <div style={{
-            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+            width: 30, height: 30, borderRadius: 10, flexShrink: 0,
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px var(--glass-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}>
             <AppstoreOutlined style={{ color: '#fff', fontSize: 14 }} />
           </div>
           {!collapsed && (
-            <Typography.Text strong ellipsis style={{ fontSize: 15 }}>
+            <Typography.Text strong ellipsis style={{ fontSize: 15, color: 'var(--glass-text-primary)' }}>
               {config.appName}
             </Typography.Text>
           )}
@@ -179,11 +184,7 @@ export default function AdminLayout() {
           selectedKeys={[selectedKey]}
           defaultOpenKeys={['admin']}
           items={menuItems}
-          style={{
-            border: 'none',
-            marginTop: 8,
-            background: 'transparent',
-          }}
+          style={{ border: 'none', marginTop: 8, background: 'transparent' }}
           theme={isDark ? 'dark' : 'light'}
         />
 
@@ -192,16 +193,17 @@ export default function AdminLayout() {
           style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
             padding: '12px 8px',
-            borderTop: glassBorder,
+            borderTop: '1px solid var(--glass-border)',
             display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden',
             cursor: 'pointer',
-            background: 'transparent',
           }}
           onClick={() => navigate('/admin/profile')}
         >
           <Avatar size={32} icon={<UserOutlined />} style={{ flexShrink: 0, background: token.colorPrimary }} />
           {!collapsed && (
-            <Typography.Text ellipsis style={{ flex: 1, fontSize: 13 }}>{displayName}</Typography.Text>
+            <Typography.Text ellipsis style={{ flex: 1, fontSize: 13, color: 'var(--glass-text-primary)' }}>
+              {displayName}
+            </Typography.Text>
           )}
         </div>
       </Sider>
@@ -211,20 +213,24 @@ export default function AdminLayout() {
         transition: 'margin-left 0.2s',
         background: 'transparent',
       }}>
-        <Header style={{
-          position: 'sticky', top: 0, zIndex: 99,
-          height: 56, lineHeight: '56px',
-          padding: '0 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: headerGlassBg,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: glassBorder,
-        }}>
+        {/* Floating glass header */}
+        <Header
+          className="glass"
+          style={{
+            position: 'sticky', top: 8, zIndex: 99,
+            height: 52, lineHeight: '52px',
+            margin: '8px 16px 0',
+            padding: '0 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'transparent',
+            borderRadius: 'var(--glass-radius-lg)',
+          }}
+        >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed((v) => !v)}
+            style={{ color: 'var(--glass-text-primary)' }}
           />
 
           <Space size={8}>
@@ -240,7 +246,7 @@ export default function AdminLayout() {
               }}
               placement="bottomRight"
             >
-              <Button type="text" icon={<GlobalOutlined />} />
+              <Button type="text" icon={<GlobalOutlined />} style={{ color: 'var(--glass-text-primary)' }} />
             </Dropdown>
 
             {/* Theme switch */}
@@ -252,20 +258,22 @@ export default function AdminLayout() {
               }}
               placement="bottomRight"
             >
-              <Button type="text" icon={isDark ? <MoonOutlined /> : <SunOutlined />} />
+              <Button type="text" icon={isDark ? <MoonOutlined /> : <SunOutlined />} style={{ color: 'var(--glass-text-primary)' }} />
             </Dropdown>
 
             {/* User menu */}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <Space style={{ cursor: 'pointer', padding: '0 4px' }}>
                 <Avatar size={28} icon={<UserOutlined />} style={{ background: token.colorPrimary }} />
-                <Typography.Text style={{ fontSize: 13 }}>{displayName}</Typography.Text>
+                <Typography.Text style={{ fontSize: 13, color: 'var(--glass-text-primary)' }}>
+                  {displayName}
+                </Typography.Text>
               </Space>
             </Dropdown>
           </Space>
         </Header>
 
-        <Content style={{ padding: 24, minHeight: 'calc(100vh - 56px)' }}>
+        <Content style={{ padding: 24, paddingTop: 20, minHeight: 'calc(100vh - 56px)' }}>
           <Outlet />
         </Content>
       </Layout>
