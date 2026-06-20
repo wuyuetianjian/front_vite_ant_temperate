@@ -63,6 +63,50 @@ export interface InitialPasswordReply {
   initial_password: string
 }
 
+export interface UserSession {
+  id: number
+  userId?: number
+  user_id?: number
+  username: string
+  ip: string
+  browser: string
+  os: string
+  status: 'active' | 'kicked' | 'expired'
+  kickedBy?: string
+  kicked_by?: string
+  loginAt?: string
+  login_at?: string          // normalized from loginAt or login_at
+  lastAccessAt?: string
+  last_access_at?: string    // normalized from lastAccessAt or last_access_at
+}
+
+export interface AuditLogEntry {
+  id: number
+  user_id: number
+  username: string
+  action: string
+  resource_type: string
+  resource_name: string
+  ip: string
+  detail: string
+  created_at: string
+}
+
+export interface SystemSettings {
+  audit_log_retention_days: number
+  session_log_retention_days: number
+}
+
+export interface ListSessionsReply {
+  sessions: UserSession[]
+  total: number
+}
+
+export interface ListAuditLogsReply {
+  logs: AuditLogEntry[]
+  total: number
+}
+
 export interface PageParams {
   page_size?: number
   page_token?: number
