@@ -415,19 +415,13 @@ export default function ServiceAccountsPage() {
       </div>
 
       <Table
-        className="glass"
-        dataSource={accounts}
-        columns={columns}
         rowKey="id"
+        columns={columns}
+        dataSource={accounts}
         loading={loading}
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          onChange: (p) => setPage(p),
-          showTotal: (n) => t('common.total', { count: n }),
-        }}
-        size="small"
+        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }), styles: { item: { borderRadius: 999 } } }}
+        bordered={false}
+        style={{ borderRadius: 12, overflow: 'hidden' }}
       />
 
       {/* Create Modal */}
