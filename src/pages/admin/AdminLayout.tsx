@@ -84,11 +84,17 @@ export default function AdminLayout() {
     return 'dashboard'
   })()
 
+  const hasSettings = hasPermission(`${SVC}/GetSystemSettings`)
   const adminChildren: MenuProps['items'] = [
     hasPermission(`${SVC}/ListUsers`) && {
       key: 'users',
       icon: <UserOutlined />,
       label: <Link to="/admin/users">{t('nav.users')}</Link>,
+    },
+    hasPermission(`${SVC}/ListServiceAccounts`) && {
+      key: 'service-accounts',
+      icon: <RobotOutlined />,
+      label: <Link to="/admin/service-accounts">{t('nav.serviceAccounts')}</Link>,
     },
     hasPermission(`${SVC}/ListRoles`) && {
       key: 'roles',
@@ -115,15 +121,11 @@ export default function AdminLayout() {
       icon: <FileSearchOutlined />,
       label: <Link to="/admin/audit-logs">{t('nav.auditLogs')}</Link>,
     },
-    hasPermission(`${SVC}/GetSystemSettings`) && {
+    hasSettings && { type: 'divider' as const },
+    hasSettings && {
       key: 'settings',
       icon: <SettingOutlined />,
       label: <Link to="/admin/settings">{t('nav.settings')}</Link>,
-    },
-    hasPermission(`${SVC}/ListServiceAccounts`) && {
-      key: 'service-accounts',
-      icon: <RobotOutlined />,
-      label: <Link to="/admin/service-accounts">{t('nav.serviceAccounts')}</Link>,
     },
   ].filter(Boolean) as MenuProps['items']
 

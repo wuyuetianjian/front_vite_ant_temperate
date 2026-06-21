@@ -174,6 +174,26 @@ All configuration is injected via environment variables — no image rebuild nee
 
 ---
 
+## Two-Factor Authentication (2FA)
+
+The platform supports TOTP-based 2FA (Google Authenticator, Microsoft Authenticator, Authy, etc.).
+
+**Admin controls:**
+- Enable/disable the 2FA feature system-wide in **System Settings → Two-Factor Authentication**.
+- When the global switch is ON, users with a bound authenticator will be prompted for a verification code on login.
+- Admins can force-reset a user's 2FA from the Users page (no TOTP code required).
+
+**User controls:**
+- Users can enable 2FA from **Profile → Two-Factor Authentication** when the global switch is on.
+- Disabling their own 2FA requires entering the current TOTP code.
+
+**Login flow with 2FA enabled:**
+1. Username + password → server returns `requires_2fa: true` + `pre_auth_token`.
+2. Frontend shows a 6-digit TOTP input.
+3. User submits the code → `/v1/auth/verify-totp` → receives the session token.
+
+---
+
 ## Scripts
 
 ```bash

@@ -270,11 +270,13 @@ export default function LoginPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const [form] = Form.useForm<LoginValues>()
+  const [totpForm] = Form.useForm<{ totp_code: string }>()
   const [messageApi, contextHolder] = message.useMessage()
   const [showPassword, setShowPassword] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [passwordLength, setPasswordLength] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [preAuthToken, setPreAuthToken] = useState<string | null>(null)
   const serviceName = useSystemSettingsStore((s) => s.settings.service_name)
   const [ssoProviders, setSsoProviders] = useState<SSOProviderBrief[]>([])
   const localAuthEnabled = useAuthSettingsStore((s) => s.localAuthEnabled)
@@ -301,10 +303,12 @@ export default function LoginPage() {
     setSubmitting(true)
     try {
       const reply = await authApi.login(values.username, values.password)
+      if (reply.requires_2fa) {
+        setPreAuthToken(reply.pre_auth_token)
+        return
+      }
       setAuth(reply.token, reply.user)
       if (reply.must_change_password) {
-        // Redirect to the dedicated first-time setup page, passing the
-        // plaintext initial password so it can be displayed and pre-filled.
         navigate('/setup', {
           replace: true,
           state: { initialPassword: reply.initial_password },
@@ -314,6 +318,20 @@ export default function LoginPage() {
       }
     } catch (err) {
       messageApi.error(apiError(err) || t('login.error.failed'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleTOTPVerify = async (values: { totp_code: string }) => {
+    if (!preAuthToken) return
+    setSubmitting(true)
+    try {
+      const reply = await authApi.verifyTOTP(preAuthToken, values.totp_code)
+      setAuth(reply.token, reply.user)
+      navigate(from, { replace: true })
+    } catch (err) {
+      messageApi.error(apiError(err) || t('twoFactor.loginError'))
     } finally {
       setSubmitting(false)
     }
@@ -355,11 +373,59 @@ export default function LoginPage() {
 
           <div className="login-box">
             <div className="login-heading">
-              <Title level={1}>{t('login.title')}</Title>
-              <Text>{t('login.subtitle')}</Text>
+              <Title level={1}>
+                {preAuthToken ? t('twoFactor.loginTitle') : t('login.title')}
+              </Title>
+              <Text>
+                {preAuthToken ? t('twoFactor.loginDesc') : t('login.subtitle')}
+              </Text>
             </div>
 
-            {localAuthEnabled && (
+            {preAuthToken && (
+              <Form
+                form={totpForm}
+                layout="vertical"
+                requiredMark={false}
+                onFinish={handleTOTPVerify}
+                className="login-form"
+              >
+                <Form.Item
+                  name="totp_code"
+                  label={t('twoFactor.verifyCode')}
+                  rules={[
+                    { required: true, message: t('twoFactor.error.code') },
+                    { len: 6, message: t('twoFactor.error.code') },
+                  ]}
+                >
+                  <Input
+                    maxLength={6}
+                    autoFocus
+                    placeholder={t('twoFactor.loginPlaceholder')}
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                  />
+                </Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  loading={submitting}
+                  className="login-button"
+                >
+                  {t('twoFactor.loginButton')}
+                </Button>
+                <Button
+                  type="link"
+                  block
+                  style={{ marginTop: 8 }}
+                  onClick={() => { setPreAuthToken(null); totpForm.resetFields() }}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </Form>
+            )}
+
+            {!preAuthToken && localAuthEnabled && (
               <>
                 <Form
                   form={form}
@@ -433,7 +499,7 @@ export default function LoginPage() {
               </>
             )}
 
-            {ssoProviders.length > 0 && (
+            {!preAuthToken && ssoProviders.length > 0 && (
               <>
                 {localAuthEnabled && (
                   <Divider style={{ margin: '20px 0 16px', borderColor: 'var(--glass-border)' }}>

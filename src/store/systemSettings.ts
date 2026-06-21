@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   service_name: config.appName || 'Temperate',
   site_icon: 'Temperate',
   corner_icon: 'Temperate',
+  totp_enabled: false,
 }
 
 interface SystemSettingsStore {

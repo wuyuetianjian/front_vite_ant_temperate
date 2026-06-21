@@ -11,6 +11,7 @@ function normalizeSettings(settings: SystemSettingsWire): SystemSettings {
     service_name: settings.service_name ?? settings.serviceName ?? 'Temperate',
     site_icon: settings.site_icon ?? settings.siteIcon ?? 'Temperate',
     corner_icon: settings.corner_icon ?? settings.cornerIcon ?? 'Temperate',
+    totp_enabled: settings.totp_enabled ?? false,
   }
 }
 

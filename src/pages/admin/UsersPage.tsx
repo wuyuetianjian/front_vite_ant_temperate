@@ -3,11 +3,13 @@ import {
   Button, Form, Input, Modal, Popconfirm, Select, Space, Switch,
   Table, Tag, Typography, message, type TableProps,
 } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, DeleteOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { usersApi } from '../../api/users'
 import { rolesApi } from '../../api/roles'
+import { authApi } from '../../api/auth'
 import { apiError } from '../../api/client'
+import { useSystemSettingsStore } from '../../store/systemSettings'
 import config from '../../config'
 import type { User, Role } from '../../types'
 
@@ -33,6 +35,7 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<User | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [form] = Form.useForm<FormValues>()
+  const totpSystemEnabled = useSystemSettingsStore((s) => s.settings.totp_enabled)
 
   const pageSize = config.defaultPageSize
 
@@ -134,6 +137,16 @@ export default function UsersPage() {
     }
   }
 
+  const handleAdminReset2FA = async (user: User) => {
+    try {
+      await authApi.adminReset2FA(user.id)
+      message.success(t('twoFactor.resetSuccess'))
+      load()
+    } catch (err) {
+      message.error(apiError(err))
+    }
+  }
+
   const columns: TableProps<User>['columns'] = [
     { title: t('common.id'), dataIndex: 'id', width: 70 },
     { title: t('users.username'), dataIndex: 'username', ellipsis: true },
@@ -160,12 +173,30 @@ export default function UsersPage() {
         </Tag>
       ),
     },
+    ...(totpSystemEnabled ? [{
+      title: t('twoFactor.title'),
+      dataIndex: 'totp_enabled',
+      width: 100,
+      render: (enabled: boolean) => (
+        <Tag color={enabled ? 'success' : 'default'} icon={<SafetyCertificateOutlined />}>
+          {enabled ? t('twoFactor.enabled') : t('twoFactor.disabled')}
+        </Tag>
+      ),
+    }] : []),
     {
       title: t('common.actions'),
-      width: 120,
-      render: (_, record) => (
+      width: totpSystemEnabled ? 160 : 120,
+      render: (_: unknown, record: User) => (
         <Space>
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
+          {totpSystemEnabled && record.totp_enabled && (
+            <Popconfirm
+              title={t('twoFactor.adminResetConfirm', { name: record.username })}
+              onConfirm={() => handleAdminReset2FA(record)}
+            >
+              <Button type="text" size="small" icon={<SafetyCertificateOutlined />} title={t('twoFactor.adminReset')} />
+            </Popconfirm>
+          )}
           <Popconfirm
             title={t('users.deleteConfirm', { name: record.username })}
             onConfirm={() => handleDelete(record.id)}

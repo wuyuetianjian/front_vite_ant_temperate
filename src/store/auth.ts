@@ -6,6 +6,7 @@ interface AuthState {
   token: string | null
   user: User | null
   setAuth: (token: string, user: User) => void
+  updateUser: (user: User) => void
   clearAuth: () => void
   isAuthenticated: () => boolean
   hasPermission: (operation: string) => boolean
@@ -19,6 +20,8 @@ export const useAuthStore = create<AuthState>()(
       user: null,
 
       setAuth: (token, user) => set({ token, user }),
+
+      updateUser: (user) => set({ user }),
 
       clearAuth: () => set({ token: null, user: null }),
 

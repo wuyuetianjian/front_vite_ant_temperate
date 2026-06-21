@@ -26,6 +26,7 @@ export interface User {
   display_name: string
   disabled: boolean
   system: boolean
+  totp_enabled: boolean
   roles: Role[]
   created_at: string
   updated_at: string
@@ -36,6 +37,13 @@ export interface LoginReply {
   user: User
   must_change_password: boolean
   initial_password: string
+  requires_2fa: boolean
+  pre_auth_token: string
+}
+
+export interface Setup2FAReply {
+  secret: string
+  qr_url: string
 }
 
 export interface SSOProvider {
@@ -103,6 +111,7 @@ export interface SystemSettings {
   service_name: string
   site_icon: string
   corner_icon: string
+  totp_enabled: boolean
 }
 
 export interface ListSessionsReply {
