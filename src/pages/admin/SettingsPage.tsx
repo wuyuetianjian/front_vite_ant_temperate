@@ -93,7 +93,7 @@ export default function SettingsPage() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 440px), 1fr))',
             gap: 24,
-            alignItems: 'start',
+            alignItems: 'stretch',
           }}>
             {/* 外观设置 — 内容较多，始终撑满整行 */}
             <Card title={t('settings.appearance')} style={{ gridColumn: '1 / -1' }}>
@@ -175,7 +175,7 @@ export default function SettingsPage() {
             </Card>
 
             {/* 双因素认证 */}
-            <Card title={t('twoFactor.title')}>
+            <Card title={t('twoFactor.title')} style={{ height: '100%' }}>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 20 }}>
                 {t('twoFactor.systemSwitchDesc')}
               </Typography.Paragraph>
@@ -190,7 +190,7 @@ export default function SettingsPage() {
             </Card>
 
             {/* 日志保留 */}
-            <Card title={t('settings.retention')}>
+            <Card title={t('settings.retention')} style={{ height: '100%' }}>
               <Typography.Paragraph type="secondary" style={{ marginBottom: 20 }}>
                 {t('settings.retentionDesc')}
               </Typography.Paragraph>
