@@ -10,7 +10,17 @@ import AuditDetailPopover from '../../components/AuditDetailModal'
 import config from '../../config'
 import type { AuditLogEntry } from '../../types'
 
-const ADMIN_ACTIONS = ['create', 'update', 'delete', 'kick', 'regenerate_token']
+const ADMIN_ACTIONS = [
+  'create',
+  'update',
+  'delete',
+  'kick',
+  'setup_2fa',
+  'enable_2fa',
+  'disable_2fa',
+  'admin_reset_2fa',
+  'regenerate_token',
+]
 const RESOURCE_TYPES = ['user', 'role', 'permission', 'session', 'service_account', 'sso_provider', 'settings']
 const LOGIN_ACTIONS = new Set(['login', 'logout'])
 
@@ -21,6 +31,10 @@ const ACTION_META: Record<string, { label: string; color: string }> = {
   kick: { label: '踢出', color: 'orange' },
   login: { label: '登录', color: 'cyan' },
   logout: { label: '退出', color: 'default' },
+  setup_2fa: { label: '创建 2FA 绑定', color: 'geekblue' },
+  enable_2fa: { label: '启用 2FA', color: 'green' },
+  disable_2fa: { label: '关闭 2FA', color: 'volcano' },
+  admin_reset_2fa: { label: '重置 2FA', color: 'magenta' },
   regenerate_token: { label: '重置令牌', color: 'purple' },
 }
 

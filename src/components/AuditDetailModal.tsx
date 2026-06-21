@@ -37,7 +37,11 @@ const FIELD_LABELS: Record<string, string> = {
   status: '状态',
   token_prefix: '令牌前缀',
   token_regenerated: '令牌已重置',
+  totp_enabled: '2FA 状态',
+  totp_verified: '2FA 验证通过',
+  setup_pending: '等待绑定',
   type: '类型',
+  user_id: '用户 ID',
   username: '用户',
 }
 
