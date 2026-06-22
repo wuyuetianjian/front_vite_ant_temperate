@@ -26,6 +26,7 @@ export interface User {
   display_name: string
   disabled: boolean
   system: boolean
+  source: string
   totp_enabled: boolean
   roles: Role[]
   created_at: string

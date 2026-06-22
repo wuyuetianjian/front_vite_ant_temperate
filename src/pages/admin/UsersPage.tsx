@@ -164,6 +164,16 @@ export default function UsersPage() {
       ),
     },
     {
+      title: t('users.source'),
+      dataIndex: 'source',
+      width: 90,
+      render: (source: string) => {
+        const src = source || 'local'
+        const colorMap: Record<string, string> = { local: 'default', ldap: 'cyan' }
+        return <Tag color={colorMap[src] ?? 'default'}>{t(`users.source_${src}`, src)}</Tag>
+      },
+    },
+    {
       title: t('users.status'),
       dataIndex: 'disabled',
       width: 90,

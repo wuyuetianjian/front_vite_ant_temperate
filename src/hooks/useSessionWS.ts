@@ -7,6 +7,7 @@ const POLL_INTERVAL = 30_000
 type Options = {
   token: string | null
   onKicked: () => void
+  onExpired?: () => void
 }
 
 function buildWSUrl(token: string): string {
@@ -19,21 +20,23 @@ function buildWSUrl(token: string): string {
   return `${proto}://${window.location.host}/v1/ws?token=${encodeURIComponent(token)}`
 }
 
-export function useSessionWS({ token, onKicked }: Options) {
+export function useSessionWS({ token, onKicked, onExpired }: Options) {
   const onKickedRef = useRef(onKicked)
   onKickedRef.current = onKicked
+  const onExpiredRef = useRef(onExpired)
+  onExpiredRef.current = onExpired
 
-  // WebSocket: real-time kicked notification from backend
+  // WebSocket: real-time kicked/expired notification from backend
   useEffect(() => {
     if (!token) return
 
     let stopped = false
-    let kicked = false
+    let terminated = false
     let ws: WebSocket | null = null
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
     function connect() {
-      if (stopped || kicked) return
+      if (stopped || terminated) return
 
       ws = new WebSocket(buildWSUrl(token!))
 
@@ -41,8 +44,11 @@ export function useSessionWS({ token, onKicked }: Options) {
         try {
           const msg = JSON.parse(e.data as string) as { type: string }
           if (msg.type === 'kicked') {
-            kicked = true
+            terminated = true
             onKickedRef.current()
+          } else if (msg.type === 'expired') {
+            terminated = true
+            onExpiredRef.current?.()
           }
         } catch {
           // ignore malformed messages
@@ -51,7 +57,7 @@ export function useSessionWS({ token, onKicked }: Options) {
 
       ws.onclose = () => {
         ws = null
-        if (!stopped && !kicked) {
+        if (!stopped && !terminated) {
           reconnectTimer = setTimeout(connect, 5000)
         }
       }

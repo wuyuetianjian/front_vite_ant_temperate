@@ -35,7 +35,6 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
   const handleKicked = useCallback(() => {
-    // session already invalidated server-side; fire logout for audit log, ignore errors
     authApi.logout().catch(() => {})
     clearAuth()
     notification.warning({
@@ -46,7 +45,17 @@ export default function AdminLayout() {
     navigate('/login', { replace: true })
   }, [clearAuth, navigate, t])
 
-  useSessionWS({ token: authToken, onKicked: handleKicked })
+  const handleExpired = useCallback(() => {
+    clearAuth()
+    notification.warning({
+      message: t('sessions.expiredTitle'),
+      description: t('sessions.expiredMessage'),
+      duration: 0,
+    })
+    navigate('/login', { replace: true })
+  }, [clearAuth, navigate, t])
+
+  useSessionWS({ token: authToken, onKicked: handleKicked, onExpired: handleExpired })
 
   const isDark = resolved() === 'dark'
   const { token } = antdTheme.useToken()
