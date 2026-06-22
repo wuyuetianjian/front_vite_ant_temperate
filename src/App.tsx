@@ -4,6 +4,7 @@ import { App as AntdApp, ConfigProvider, theme as antdTheme } from 'antd'
 import { useThemeStore } from './store/theme'
 import { useWallpaperStore } from './store/wallpaper'
 import { isCustomIcon, useSystemSettingsStore } from './store/systemSettings'
+import { authApi } from './api/auth'
 import { router } from './router'
 
 function WallpaperBackground() {
@@ -31,6 +32,15 @@ export default function App() {
   useEffect(() => {
     loadSystemSettings().catch(() => {})
   }, [loadSystemSettings])
+
+  useEffect(() => {
+    if (window.location.pathname === '/setup') return
+    authApi.getInitialPassword()
+      .then((result) => {
+        if (result.available) router.navigate('/setup', { replace: true })
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     document.title = settings.service_name || 'Temperate'
