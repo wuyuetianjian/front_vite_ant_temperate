@@ -10,6 +10,9 @@ const DEFAULT_SETTINGS: SystemSettings = {
   site_icon: 'Temperate',
   corner_icon: 'Temperate',
   totp_enabled: false,
+  default_theme_preset: 'glass',
+  default_theme_mode: 'light',
+  default_theme_config: '',
 }
 
 interface SystemSettingsStore {

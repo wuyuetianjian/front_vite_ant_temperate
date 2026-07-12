@@ -1,17 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button, Form, Input, Modal, Popconfirm, Select, Space, Switch,
   Table, Tag, Typography, message, type TableProps,
 } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined, SafetyCertificateOutlined, SearchOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { usersApi } from '../../api/users'
 import { rolesApi } from '../../api/roles'
 import { authApi } from '../../api/auth'
+import { ssoApi } from '../../api/sso'
 import { apiError } from '../../api/client'
 import { useSystemSettingsStore } from '../../store/systemSettings'
 import config from '../../config'
-import type { User, Role } from '../../types'
+import type { User, Role, SSOProvider } from '../../types'
 
 type FormMode = 'create' | 'edit'
 
@@ -28,21 +29,56 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [roles, setRoles] = useState<Role[]>([])
+  const [ssoProviders, setSsoProviders] = useState<SSOProvider[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [mode, setMode] = useState<FormMode>('create')
   const [editing, setEditing] = useState<User | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [resetSubmitting, setResetSubmitting] = useState(false)
   const [form] = Form.useForm<FormValues>()
   const totpSystemEnabled = useSystemSettingsStore((s) => s.settings.totp_enabled)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const pageSize = config.defaultPageSize
 
-  const load = async (p = page) => {
+  const sourceLabels = useMemo(() => {
+    const labels: Record<string, string> = {
+      local: 'Local (LOCAL)',
+      ldap: 'LDAP (LDAP)',
+      oauth1: 'OAUTH1 (OAUTH1)',
+      oauth2: 'OAUTH2 (OAUTH2)',
+      oidc: 'OIDC (OIDC)',
+      saml1: 'SAML1 (SAML1)',
+      saml2: 'SAML2 (SAML2)',
+    }
+    ssoProviders.forEach((provider) => {
+      const type = provider.type.toLowerCase()
+      const protocol = provider.type.toUpperCase()
+      const name = provider.name || protocol
+      if (!labels[type] || labels[type] === `${protocol} (${protocol})`) {
+        labels[type] = `${name} (${protocol})`
+      }
+    })
+    return labels
+  }, [ssoProviders])
+
+  const sourceLabel = (source: string) => {
+    const normalized = (source || 'local').toLowerCase()
+    return sourceLabels[normalized] ?? (source || 'Local')
+  }
+
+  const load = async (p = page, q = search) => {
     setLoading(true)
     try {
-      const res = await usersApi.list({ page_size: pageSize, page_token: (p - 1) * pageSize })
+      const params: { page_size: number; page_token: number; search?: string } = {
+        page_size: pageSize,
+        page_token: (p - 1) * pageSize,
+      }
+      if (q) params.search = q
+      const res = await usersApi.list(params)
       setUsers(res.users)
       setTotal(res.total)
     } finally {
@@ -50,9 +86,18 @@ export default function UsersPage() {
     }
   }
 
+  const handleSearch = (value: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setPage(1)
+      load(1, value)
+    }, 300)
+  }
+
   useEffect(() => { load() }, [page])
   useEffect(() => {
     rolesApi.list({ page_size: 100 }).then((r) => setRoles(r.roles))
+    ssoApi.list(true).then(setSsoProviders).catch(() => setSsoProviders([]))
   }, [])
 
   const openCreate = () => {
@@ -147,10 +192,33 @@ export default function UsersPage() {
     }
   }
 
+  const handleResetPassword = async (user: User) => {
+    setResetSubmitting(true)
+    try {
+      const result = await usersApi.resetPassword(user.id)
+      message.success(t('users.resetPasswordSuccess'))
+      Modal.success({
+        title: t('users.resetPasswordResultTitle', { name: user.username }),
+        content: (
+          <Typography.Paragraph copyable style={{ marginBottom: 0, marginTop: 12 }}>
+            {result.password}
+          </Typography.Paragraph>
+        ),
+      })
+      load()
+    } catch (err) {
+      message.error(apiError(err))
+    } finally {
+      setResetSubmitting(false)
+    }
+  }
+
   const columns: TableProps<User>['columns'] = [
     { title: t('common.id'), dataIndex: 'id', width: 70 },
     { title: t('users.username'), dataIndex: 'username', ellipsis: true },
     { title: t('users.displayName'), dataIndex: 'display_name', ellipsis: true,
+      render: (v) => v || <Typography.Text type="secondary">—</Typography.Text> },
+    { title: t('users.email'), dataIndex: 'email', ellipsis: true,
       render: (v) => v || <Typography.Text type="secondary">—</Typography.Text> },
     {
       title: t('users.roles'),
@@ -165,12 +233,17 @@ export default function UsersPage() {
     },
     {
       title: t('users.source'),
-      dataIndex: 'source',
-      width: 90,
-      render: (source: string) => {
-        const src = source || 'local'
-        const colorMap: Record<string, string> = { local: 'default', ldap: 'cyan' }
-        return <Tag color={colorMap[src] ?? 'default'}>{t(`users.source_${src}`, src)}</Tag>
+      width: 120,
+      render: (_: unknown, record: User) => {
+        const colorMap: Record<string, string> = { local: 'default', ldap: 'cyan', oidc: 'geekblue', saml1: 'purple', saml2: 'purple' }
+        const sources = record.auth_sources?.length ? record.auth_sources : [record.source || 'local']
+        return (
+          <Space size={4} wrap>
+            {sources.map((src) => (
+              <Tag key={src} color={colorMap[src.toLowerCase()] ?? 'default'}>{sourceLabel(src)}</Tag>
+            ))}
+          </Space>
+        )
       },
     },
     {
@@ -195,10 +268,24 @@ export default function UsersPage() {
     }] : []),
     {
       title: t('common.actions'),
-      width: totpSystemEnabled ? 160 : 120,
+      width: totpSystemEnabled ? 200 : 160,
       render: (_: unknown, record: User) => (
         <Space>
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
+          {(record.source || 'local') === 'local' && (
+            <Popconfirm
+              title={t('users.resetPasswordConfirm', { name: record.username })}
+              onConfirm={() => handleResetPassword(record)}
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<KeyOutlined />}
+                title={t('users.resetPassword')}
+                loading={resetSubmitting}
+              />
+            </Popconfirm>
+          )}
           {totpSystemEnabled && record.totp_enabled && (
             <Popconfirm
               title={t('twoFactor.adminResetConfirm', { name: record.username })}
@@ -223,9 +310,22 @@ export default function UsersPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>{t('users.title')}</Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          {t('users.createUser')}
-        </Button>
+        <Space>
+          <Input
+            prefix={<SearchOutlined style={{ color: 'var(--ant-color-text-quaternary)' }} />}
+            placeholder={t('users.searchPlaceholder')}
+            allowClear
+            style={{ width: 220 }}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              handleSearch(e.target.value)
+            }}
+          />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            {t('users.createUser')}
+          </Button>
+        </Space>
       </div>
 
       <Table
@@ -233,7 +333,14 @@ export default function UsersPage() {
         columns={columns}
         dataSource={users}
         loading={loading}
-        pagination={{ current: page, pageSize, total, onChange: setPage, showTotal: (n) => t('common.total', { count: n }), styles: { item: { borderRadius: 999 } } }}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          onChange: (p) => { setPage(p); load(p, search) },
+          showTotal: (n) => t('common.total', { count: n }),
+          styles: { item: { borderRadius: 999 } },
+        }}
         bordered={false}
         style={{ borderRadius: 12, overflow: 'hidden' }}
       />
@@ -292,6 +399,7 @@ export default function UsersPage() {
           </Form.Item>
         </Form>
       </Modal>
+
     </div>
   )
 }

@@ -1,17 +1,29 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button, Checkbox, Divider, Form, Input, Space, Typography, message } from 'antd'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import { authApi } from '../api/auth'
 import { ssoApi } from '../api/sso'
 import { apiError } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { useAuthSettingsStore } from '../store/authSettings'
 import { isCustomIcon, useSystemSettingsStore } from '../store/systemSettings'
+import { useAuthSettingsStore } from '../store/authSettings'
+import config from '../config'
 import type { SSOProviderBrief } from '../types'
 import '../App.css'
 
 const { Text, Title } = Typography
+
+function ssoLoginUrl(providerId: number) {
+  const base = config.apiBaseUrl.replace(/\/$/, '')
+  const params = new URLSearchParams({
+    redirect_uri: window.location.origin + '/admin',
+    callback_origin: window.location.origin,
+  })
+  const path = `/v1/sso/login/${providerId}?${params.toString()}`
+  return base ? `${base}${path}` : path
+}
 
 function BrandMark() {
   const icon = useSystemSettingsStore((s) => s.settings.corner_icon)
@@ -268,6 +280,7 @@ export default function LoginPage() {
   const location = useLocation()
   const setAuth = useAuthStore((s) => s.setAuth)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const localAuthEnabled = useAuthSettingsStore((s) => s.localAuthEnabled)
 
   const [form] = Form.useForm<LoginValues>()
   const [totpForm] = Form.useForm<{ totp_code: string }>()
@@ -279,11 +292,37 @@ export default function LoginPage() {
   const [preAuthToken, setPreAuthToken] = useState<string | null>(null)
   const serviceName = useSystemSettingsStore((s) => s.settings.service_name)
   const [ssoProviders, setSsoProviders] = useState<SSOProviderBrief[]>([])
-  const localAuthEnabled = useAuthSettingsStore((s) => s.localAuthEnabled)
+  const [ssoLoaded, setSsoLoaded] = useState(false)
+  const [showLocalForm, setShowLocalForm] = useState(false)
+
+  // LDAP goes through local form; browser-redirect = OAuth/OIDC/SAML
+  const browserSSOProviders = useMemo(
+    () => ssoProviders.filter((p) => ['oauth1', 'oauth2', 'oidc', 'saml1', 'saml2'].includes(p.type)),
+    [ssoProviders]
+  )
+
+  // SSO-only mode: local auth disabled and browser-redirect SSO providers exist
+  const ssoOnlyMode = !localAuthEnabled && browserSSOProviders.length > 0
+  // Auto-redirect when exactly one SSO provider and local auth is disabled
+  const autoRedirecting = ssoOnlyMode && browserSSOProviders.length === 1 && !showLocalForm
+
+  // Show local form when: local auth enabled, user explicitly requested it, or no SSO at all
+  const displayLocalForm = !ssoOnlyMode || showLocalForm
 
   useEffect(() => {
-    ssoApi.listPublic().then(setSsoProviders).catch(() => {})
+    ssoApi.listPublic().then((providers) => {
+      setSsoProviders(providers)
+      setSsoLoaded(true)
+    }).catch(() => { setSsoLoaded(true) })
   }, [])
+
+  // Auto-redirect to single SSO when local auth is disabled
+  useEffect(() => {
+    if (!ssoLoaded || showLocalForm || localAuthEnabled) return
+    if (browserSSOProviders.length === 1) {
+      window.location.href = ssoLoginUrl(browserSSOProviders[0].id)
+    }
+  }, [ssoLoaded, showLocalForm, localAuthEnabled, browserSSOProviders])
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/admin'
 
@@ -292,12 +331,14 @@ export default function LoginPage() {
     if (isAuthenticated()) navigate(from, { replace: true })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // If local auth is disabled and there's exactly one SSO provider, redirect to it
+  // Show disabled notification if redirected here after account was disabled
   useEffect(() => {
-    if (!localAuthEnabled && ssoProviders.length === 1) {
-      window.location.href = `/v1/sso/login/${ssoProviders[0].id}?redirect_uri=${encodeURIComponent(window.location.origin + from)}`
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('reason') === 'disabled') {
+      messageApi.error(t('login.error.disabled'), 6)
+      window.history.replaceState(null, '', '/login')
     }
-  }, [localAuthEnabled, ssoProviders]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async (values: LoginValues) => {
     setSubmitting(true)
@@ -317,7 +358,12 @@ export default function LoginPage() {
         navigate(from, { replace: true })
       }
     } catch (err) {
-      messageApi.error(apiError(err) || t('login.error.failed'))
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        const reason = err.response.data?.reason === 'USER_DISABLED' ? '?reason=disabled' : ''
+        navigate(`/403${reason}`, { replace: true })
+      } else {
+        messageApi.error(apiError(err) || t('login.error.failed'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -336,6 +382,24 @@ export default function LoginPage() {
       setSubmitting(false)
     }
   }
+
+  const ssoButtons = (
+    <Space direction="vertical" style={{ width: '100%' }} size={8}>
+      {browserSSOProviders.map((p) => (
+        <Button
+          key={p.id}
+          block
+          style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          onClick={() => {
+            window.location.href = ssoLoginUrl(p.id)
+          }}
+        >
+          {p.icon && <span>{p.icon}</span>}
+          {t('sso.loginWith', { name: p.name })}
+        </Button>
+      ))}
+    </Space>
+  )
 
   return (
     <>
@@ -381,6 +445,7 @@ export default function LoginPage() {
               </Text>
             </div>
 
+            {/* TOTP verification step */}
             {preAuthToken && (
               <Form
                 form={totpForm}
@@ -425,7 +490,22 @@ export default function LoginPage() {
               </Form>
             )}
 
-            {!preAuthToken && localAuthEnabled && (
+            {/* Auto-redirecting: single SSO, local auth disabled */}
+            {!preAuthToken && autoRedirecting && (
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <Text style={{ color: 'var(--glass-text-secondary)' }}>
+                  {t('sso.redirecting', { name: browserSSOProviders[0].name })}
+                </Text>
+              </div>
+            )}
+
+            {/* SSO-only multi-provider: show SSO buttons prominently, no local form */}
+            {!preAuthToken && ssoOnlyMode && !showLocalForm && !autoRedirecting && (
+              <>{ssoButtons}</>
+            )}
+
+            {/* Local auth form */}
+            {!preAuthToken && displayLocalForm && (
               <>
                 <Form
                   form={form}
@@ -492,39 +572,46 @@ export default function LoginPage() {
                   </Button>
                 </Form>
 
-                <Space className="signup-row" size={4}>
-                  <Text>{t('login.noAccount')}</Text>
-                  <a href="/signup">{t('login.signUp')}</a>
-                </Space>
+                {browserSSOProviders.length === 0 && (
+                  <Space className="signup-row" size={4}>
+                    <Text>{t('login.noAccount')}</Text>
+                    <a href="/signup">{t('login.signUp')}</a>
+                  </Space>
+                )}
+
+                {/* SSO buttons below local form (when local auth is enabled) */}
+                {!ssoOnlyMode && browserSSOProviders.length > 0 && (
+                  <>
+                    <Divider style={{ margin: '20px 0 16px', borderColor: 'var(--glass-border)' }}>
+                      <Text style={{ fontSize: 12, color: 'var(--glass-text-secondary)' }}>{t('sso.orLoginWith')}</Text>
+                    </Divider>
+                    {ssoButtons}
+                  </>
+                )}
+
+                {/* Back to SSO link when admin switched to local form in SSO-only mode */}
+                {ssoOnlyMode && showLocalForm && (
+                  <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <Button type="link" size="small" onClick={() => setShowLocalForm(false)}>
+                      {t('sso.backToSSO')}
+                    </Button>
+                  </div>
+                )}
               </>
             )}
 
-            {!preAuthToken && ssoProviders.length > 0 && (
-              <>
-                {localAuthEnabled && (
-                  <Divider style={{ margin: '20px 0 16px', borderColor: 'var(--glass-border)' }}>
-                    <Text style={{ fontSize: 12, color: 'var(--glass-text-secondary)' }}>{t('sso.orLoginWith')}</Text>
-                  </Divider>
-                )}
-                <Space direction="vertical" style={{ width: '100%' }} size={8}>
-                  {ssoProviders.map((p) => (
-                    <Button
-                      key={p.id}
-                      block
-                      style={{
-                        height: 40,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      }}
-                      onClick={() => {
-                        window.location.href = `/v1/sso/login/${p.id}?redirect_uri=${encodeURIComponent(window.location.origin + '/admin')}`
-                      }}
-                    >
-                      {p.icon && <span>{p.icon}</span>}
-                      {t('sso.loginWith', { name: p.name })}
-                    </Button>
-                  ))}
-                </Space>
-              </>
+            {/* Admin emergency login link shown in SSO-only mode */}
+            {!preAuthToken && ssoOnlyMode && !showLocalForm && (
+              <div style={{ textAlign: 'center', marginTop: 20 }}>
+                <Button
+                  type="link"
+                  size="small"
+                  style={{ color: 'var(--glass-text-secondary)', fontSize: 12 }}
+                  onClick={() => setShowLocalForm(true)}
+                >
+                  {t('login.adminFallback')}
+                </Button>
+              </div>
             )}
           </div>
         </section>

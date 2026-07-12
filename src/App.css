@@ -1,4 +1,16 @@
 /* ── LOGIN PAGE LAYOUT ── */
+.forbidden-page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: transparent;
+}
+
+.forbidden-page .ant-result {
+  width: min(100%, 560px);
+}
+
 .login-page {
   min-height: 100svh;
   display: grid;

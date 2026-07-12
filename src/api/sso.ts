@@ -29,5 +29,16 @@ export const ssoApi = {
     config: Record<string, string>
   }) => client.patch<SSOProvider>(`/v1/sso/providers/${id}`, data).then((r) => r.data),
 
+  test: (data: {
+    type: string
+    config: Record<string, string>
+    username: string
+    password: string
+  }) => client.post<{ success: boolean; display_name: string; message: string }>('/v1/sso/providers/test', data).then((r) => r.data),
+
   delete: (id: number) => client.delete(`/v1/sso/providers/${id}`),
+
+  generateSamlKeyPair: (commonName = '') =>
+    client.post<{ private_key: string; certificate: string }>('/v1/sso/saml/keypair', { common_name: commonName })
+      .then((r) => r.data),
 }

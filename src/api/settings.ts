@@ -12,6 +12,9 @@ function normalizeSettings(settings: SystemSettingsWire): SystemSettings {
     site_icon: settings.site_icon ?? settings.siteIcon ?? 'Temperate',
     corner_icon: settings.corner_icon ?? settings.cornerIcon ?? 'Temperate',
     totp_enabled: settings.totp_enabled ?? false,
+    default_theme_preset: settings.default_theme_preset ?? 'glass',
+    default_theme_mode: settings.default_theme_mode ?? 'light',
+    default_theme_config: settings.default_theme_config ?? '',
   }
 }
 

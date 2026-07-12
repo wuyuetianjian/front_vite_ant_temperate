@@ -16,7 +16,11 @@ export const authApi = {
 
   me: () => client.get<User>('/v1/auth/me').then((r) => r.data),
 
-  logout: (body?: { detail?: string }) => client.post('/v1/auth/logout', body ?? {}),
+  updateTheme: (data: { theme_preset: string; theme_mode: string; theme_config?: string }) =>
+    client.put<User>('/v1/auth/me/theme', data).then((r) => r.data),
+
+  logout: (body?: { detail?: string; redirect_uri?: string }) =>
+    client.post<{ sso_logout_url?: string }>('/v1/auth/logout', body ?? {}).then((r) => r.data),
 
   setup2FA: () => client.post<Setup2FAReply>('/v1/auth/2fa/setup', {}).then((r) => r.data),
 

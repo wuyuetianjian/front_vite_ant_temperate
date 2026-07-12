@@ -19,6 +19,7 @@ const ADMIN_ACTIONS = [
   'enable_2fa',
   'disable_2fa',
   'admin_reset_2fa',
+  'admin_reset_password',
   'regenerate_token',
 ]
 const RESOURCE_TYPES = ['user', 'role', 'permission', 'session', 'service_account', 'sso_provider', 'settings']
@@ -35,6 +36,7 @@ const ACTION_META: Record<string, { label: string; color: string }> = {
   enable_2fa: { label: '启用 2FA', color: 'green' },
   disable_2fa: { label: '关闭 2FA', color: 'volcano' },
   admin_reset_2fa: { label: '重置 2FA', color: 'magenta' },
+  admin_reset_password: { label: '重置密码', color: 'purple' },
   regenerate_token: { label: '重置令牌', color: 'purple' },
 }
 

@@ -8,5 +8,5 @@ interface Props {
 
 export default function PermissionRoute({ operation, children }: Props) {
   const hasPermission = useAuthStore((s) => s.hasPermission)
-  return hasPermission(operation) ? <>{children}</> : <Navigate to="/admin" replace />
+  return hasPermission(operation) ? <>{children}</> : <Navigate to="/403" replace />
 }

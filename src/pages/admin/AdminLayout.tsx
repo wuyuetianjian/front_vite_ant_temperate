@@ -12,17 +12,19 @@ import {
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/auth'
-import { useThemeStore, type ThemeMode } from '../../store/theme'
+import { useThemeStore } from '../../store/theme'
 import ChangePasswordModal from '../../components/ChangePasswordModal'
 import { useSessionWS } from '../../hooks/useSessionWS'
 import { authApi } from '../../api/auth'
 import { sessionsApi } from '../../api/sessions'
 import { isCustomIcon, useSystemSettingsStore } from '../../store/systemSettings'
+import { themePresets } from '../../theme/presets'
 
 const { Sider, Header, Content } = Layout
 
 const SIDER_WIDTH = 220
 const SIDER_COLLAPSED_WIDTH = 64
+const USER_DOCK_HEIGHT = 64
 const SVC = '/temperate.v1.TemperateService'
 
 export default function AdminLayout() {
@@ -30,7 +32,8 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, token: authToken, clearAuth, hasPermission } = useAuthStore()
-  const { mode, setMode, resolved } = useThemeStore()
+  const { preset, setPreset, resolved } = useThemeStore()
+  const updateUser = useAuthStore((s) => s.updateUser)
   const systemSettings = useSystemSettingsStore((s) => s.settings)
   const [collapsed, setCollapsed] = useState(false)
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
@@ -61,6 +64,7 @@ export default function AdminLayout() {
   const { token } = antdTheme.useToken()
 
   const handleLogout = async () => {
+    let ssoLogoutUrl = ''
     try {
       const res = await sessionsApi.list({ username: user?.username })
       const session = res.sessions?.find((s) => s.status === 'active')
@@ -73,9 +77,16 @@ export default function AdminLayout() {
         const duration = h > 0 ? `${h}h ${m}m` : `${m}m`
         detail += ` · 登录时间: ${loginTime.toLocaleString()} · 在线: ${duration} · 客户端: ${session.ip}`
       }
-      await authApi.logout({ detail })
+      const reply = await authApi.logout({ detail, redirect_uri: `${window.location.origin}/login` })
+      ssoLogoutUrl = reply?.sso_logout_url ?? ''
     } catch { /* ignore — local logout still proceeds */ }
     clearAuth()
+    if (ssoLogoutUrl) {
+      // SSO session: hand off to the IdP to terminate its session, then it
+      // redirects back to /login.
+      window.location.href = ssoLogoutUrl
+      return
+    }
     navigate('/login', { replace: true })
   }
 
@@ -154,11 +165,27 @@ export default function AdminLayout() {
       : []),
   ]
 
-  const themeItems: MenuProps['items'] = [
-    { key: 'light', label: t('theme.light'), icon: <SunOutlined /> },
-    { key: 'dark', label: t('theme.dark'), icon: <MoonOutlined /> },
-    { key: 'system', label: t('theme.system'), icon: <DesktopOutlined /> },
-  ]
+  const themeItems: MenuProps['items'] = themePresets.map((item) => ({
+    key: item.key,
+    label: t(`theme.presets.${item.key}`),
+    icon: item.mode === 'dark' ? <MoonOutlined /> : item.density === 'compact' ? <DesktopOutlined /> : <SunOutlined />,
+  }))
+
+  const handleThemePresetChange = async (key: string) => {
+    const selected = themePresets.find((item) => item.key === key)
+    if (!selected) return
+    setPreset(selected.key, selected.mode)
+    try {
+      const updated = await authApi.updateTheme({
+        theme_preset: selected.key,
+        theme_mode: selected.mode,
+        theme_config: '',
+      })
+      updateUser(updated)
+    } catch {
+      notification.error({ message: t('theme.saveFailed') })
+    }
+  }
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -193,11 +220,12 @@ export default function AdminLayout() {
         collapsed={collapsed}
         className="glass"
         style={{
-          position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100,
+          position: 'fixed', left: 0, top: 0, bottom: USER_DOCK_HEIGHT, zIndex: 100,
           background: 'transparent',
           borderRight: '1px solid var(--glass-border)',
+          borderBottom: '1px solid var(--glass-border)',
           borderRadius: 0,
-          overflow: 'auto',
+          overflow: 'hidden',
         }}
       >
         {/* Logo */}
@@ -237,29 +265,48 @@ export default function AdminLayout() {
           selectedKeys={[selectedKey]}
           defaultOpenKeys={['admin']}
           items={menuItems}
-          style={{ border: 'none', marginTop: 8, background: 'transparent' }}
+          style={{
+            border: 'none',
+            marginTop: 8,
+            background: 'transparent',
+            height: `calc(100vh - ${USER_DOCK_HEIGHT + 64}px)`,
+            overflowY: 'auto',
+            paddingBottom: 12,
+          }}
           theme={isDark ? 'dark' : 'light'}
         />
-
-        {/* Profile at bottom */}
-        <div
-          style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
-            padding: '12px 8px',
-            borderTop: '1px solid var(--glass-border)',
-            display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden',
-            cursor: 'pointer',
-          }}
-          onClick={() => navigate('/admin/profile')}
-        >
-          <Avatar size={32} icon={<UserOutlined />} style={{ flexShrink: 0, background: token.colorPrimary }} />
-          {!collapsed && (
-            <Typography.Text ellipsis style={{ flex: 1, fontSize: 13, color: 'var(--glass-text-primary)' }}>
-              {displayName}
-            </Typography.Text>
-          )}
-        </div>
       </Sider>
+
+      {/* Profile is intentionally outside the navigation container. */}
+      <div
+        className="glass"
+        style={{
+          position: 'fixed',
+          left: 0,
+          bottom: 0,
+          zIndex: 101,
+          width: collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH,
+          height: USER_DOCK_HEIGHT,
+          padding: collapsed ? 0 : '0 12px',
+          borderRadius: 0,
+          borderRight: '1px solid var(--glass-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: 10,
+          overflow: 'hidden',
+          cursor: 'pointer',
+          transition: 'width 0.2s, padding 0.2s',
+        }}
+        onClick={() => navigate('/admin/profile')}
+      >
+        <Avatar size={32} icon={<UserOutlined />} style={{ flexShrink: 0, background: token.colorPrimary }} />
+        {!collapsed && (
+          <Typography.Text ellipsis style={{ flex: 1, fontSize: 13, color: 'var(--glass-text-primary)' }}>
+            {displayName}
+          </Typography.Text>
+        )}
+      </div>
 
       <Layout style={{
         marginLeft: collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH,
@@ -306,8 +353,8 @@ export default function AdminLayout() {
             <Dropdown
               menu={{
                 items: themeItems,
-                selectedKeys: [mode],
-                onClick: ({ key }) => setMode(key as ThemeMode),
+                selectedKeys: [preset],
+                onClick: ({ key }) => handleThemePresetChange(key),
               }}
               placement="bottomRight"
             >

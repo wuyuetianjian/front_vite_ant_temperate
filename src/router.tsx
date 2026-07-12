@@ -3,6 +3,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PermissionRoute from './components/PermissionRoute'
 import BiDashboardPage from './pages/BiDashboardPage'
 import LoginPage from './pages/LoginPage'
+import ForbiddenPage from './pages/ForbiddenPage'
 import SetupPage from './pages/SetupPage'
 import AdminLayout from './pages/admin/AdminLayout'
 import DashboardPage from './pages/admin/DashboardPage'
@@ -20,6 +21,7 @@ const SVC = '/temperate.v1.TemperateService'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/403', element: <ForbiddenPage /> },
   { path: '/setup', element: <SetupPage /> },
   {
     path: '/admin',

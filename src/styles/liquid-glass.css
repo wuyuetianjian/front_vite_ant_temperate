@@ -39,6 +39,112 @@
   --wallpaper-overlay:    rgba(0, 0, 0, 0.30);
 }
 
+[data-theme-preset="default"] {
+  --glass-radius-sm: 8px;
+  --glass-radius-md: 12px;
+  --glass-radius-lg: 16px;
+  --glass-accent: #1677ff;
+  --glass-accent-glow: rgba(22, 119, 255, 0.28);
+}
+
+[data-theme-preset="mui"] {
+  --glass-blur: 24px;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(25, 118, 210, 0.18);
+  --glass-radius-sm: 6px;
+  --glass-radius-md: 8px;
+  --glass-radius-lg: 12px;
+  --glass-accent: #1976d2;
+  --glass-accent-glow: rgba(25, 118, 210, 0.28);
+}
+
+[data-theme-preset="shadcn"] {
+  --glass-blur: 12px;
+  --glass-bg: rgba(255, 255, 255, 0.84);
+  --glass-border: rgba(24, 24, 27, 0.14);
+  --glass-radius-sm: 6px;
+  --glass-radius-md: 8px;
+  --glass-radius-lg: 10px;
+  --glass-accent: #18181b;
+  --glass-accent-glow: rgba(24, 24, 27, 0.18);
+}
+
+[data-theme-preset="cartoon"] {
+  --glass-blur: 18px;
+  --glass-bg: rgba(255, 247, 237, 0.70);
+  --glass-border: rgba(14, 165, 233, 0.36);
+  --glass-radius-sm: 14px;
+  --glass-radius-md: 18px;
+  --glass-radius-lg: 24px;
+  --glass-shadow: 0 10px 0 rgba(14, 165, 233, 0.16), 0 16px 30px rgba(15, 23, 42, 0.10);
+  --glass-accent: #0ea5e9;
+  --glass-accent-glow: rgba(14, 165, 233, 0.30);
+}
+
+[data-theme-preset="illustration"] {
+  --glass-blur: 28px;
+  --glass-bg: rgba(255, 241, 242, 0.64);
+  --glass-border: rgba(124, 58, 237, 0.24);
+  --glass-radius-sm: 16px;
+  --glass-radius-md: 20px;
+  --glass-radius-lg: 28px;
+  --glass-accent: #7c3aed;
+  --glass-accent-glow: rgba(124, 58, 237, 0.26);
+}
+
+[data-theme-preset="bootstrap"] {
+  --glass-blur: 10px;
+  --glass-bg: rgba(248, 249, 250, 0.88);
+  --glass-border: rgba(13, 110, 253, 0.22);
+  --glass-radius-sm: 4px;
+  --glass-radius-md: 6px;
+  --glass-radius-lg: 8px;
+  --glass-shadow: 0 3px 10px rgba(33, 37, 41, 0.12);
+  --glass-accent: #0d6efd;
+  --glass-accent-glow: rgba(13, 110, 253, 0.22);
+}
+
+[data-theme-preset="glass"] {
+  --glass-accent: #3b82f6;
+  --glass-accent-glow: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme-preset="geek"] {
+  --glass-bg: rgba(2, 6, 23, 0.52);
+  --glass-border: rgba(34, 197, 94, 0.24);
+  --glass-radius-sm: 4px;
+  --glass-radius-md: 6px;
+  --glass-radius-lg: 10px;
+  --glass-accent: #22c55e;
+  --glass-accent-glow: rgba(34, 197, 94, 0.26);
+}
+
+[data-theme="dark"][data-theme-preset="dark"] {
+  --glass-accent: #60a5fa;
+  --glass-accent-glow: rgba(96, 165, 250, 0.28);
+}
+
+[data-theme="dark"][data-theme-preset="geek"] {
+  --wallpaper-overlay: rgba(0, 0, 0, 0.42);
+}
+
+/* Entity themes share semantic tokens but never inherit the glass material. */
+:root:not([data-theme-preset="glass"]) {
+  --glass-blur: 0px;
+  --glass-bg: var(--theme-bg-surface);
+  --glass-border: var(--theme-border);
+  --glass-specular: transparent;
+  --glass-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --glass-radius-sm: var(--theme-radius);
+  --glass-radius-md: var(--theme-radius);
+  --glass-radius-lg: var(--theme-radius);
+  --glass-text-primary: var(--theme-text-primary);
+  --glass-text-secondary: var(--theme-text-secondary);
+  --glass-accent: var(--theme-primary);
+  --glass-accent-glow: color-mix(in srgb, var(--theme-primary) 28%, transparent);
+  --wallpaper-overlay: transparent;
+}
+
 /* ── CORE GLASS SURFACE ── */
 .glass {
   background: var(--glass-bg);
@@ -97,6 +203,29 @@
     radial-gradient(ellipse at 80% 20%, rgba(96, 165, 250, 0.13) 0%, transparent 50%),
     radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.09) 0%, transparent 45%),
     linear-gradient(135deg, #0a1628 0%, #0f172a 50%, #0d1117 100%);
+}
+
+[data-theme-preset="cartoon"] .wallpaper-bg-default {
+  background-image:
+    radial-gradient(circle at 18% 26%, rgba(14, 165, 233, 0.18) 0 9%, transparent 10%),
+    radial-gradient(circle at 78% 22%, rgba(251, 146, 60, 0.18) 0 8%, transparent 9%),
+    linear-gradient(135deg, #fff7ed 0%, #e0f2fe 56%, #fef3c7 100%);
+}
+
+[data-theme-preset="illustration"] .wallpaper-bg-default {
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(124, 58, 237, 0.16) 0%, transparent 44%),
+    radial-gradient(ellipse at 80% 70%, rgba(244, 114, 182, 0.18) 0%, transparent 46%),
+    linear-gradient(135deg, #fff1f2 0%, #f5f3ff 52%, #fef3c7 100%);
+}
+
+[data-theme-preset="geek"] .wallpaper-bg-default {
+  background-image:
+    linear-gradient(rgba(34, 197, 94, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 197, 94, 0.08) 1px, transparent 1px),
+    radial-gradient(ellipse at 70% 20%, rgba(34, 197, 94, 0.16) 0%, transparent 46%),
+    linear-gradient(135deg, #020617 0%, #0f172a 52%, #052e16 100%);
+  background-size: 28px 28px, 28px 28px, auto, auto;
 }
 
 /* Overlay for readability */

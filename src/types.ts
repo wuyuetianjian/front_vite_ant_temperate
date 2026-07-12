@@ -24,10 +24,15 @@ export interface User {
   id: number
   username: string
   display_name: string
+  email: string
   disabled: boolean
   system: boolean
   source: string
+  auth_sources: string[]
   totp_enabled: boolean
+  theme_preset: string
+  theme_mode: string
+  theme_config: string
   roles: Role[]
   created_at: string
   updated_at: string
@@ -83,6 +88,8 @@ export interface UserSession {
   status: 'active' | 'kicked' | 'expired'
   kickedBy?: string
   kicked_by?: string
+  loginSource?: string
+  login_source?: string
   loginAt?: string
   login_at?: string          // normalized from loginAt or login_at
   lastAccessAt?: string
@@ -113,6 +120,9 @@ export interface SystemSettings {
   site_icon: string
   corner_icon: string
   totp_enabled: boolean
+  default_theme_preset: string
+  default_theme_mode: string
+  default_theme_config: string
 }
 
 export interface ListSessionsReply {

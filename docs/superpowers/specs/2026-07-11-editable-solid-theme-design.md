@@ -33,6 +33,12 @@
 - 保存失败时回滚预览值并显示错误反馈。
 - 管理员可配置的高级令牌（组件级尺寸、阴影、字体和完整 Ant Design ThemeConfig）不进入本次普通用户编辑器；后续放置在管理后台并由管理员权限保护。
 
+### 管理员全局默认主题
+
+- 系统设置增加全局默认预设、模式与核心令牌 JSON，复用受管理员权限保护的 `/v1/settings` 接口和 `system_settings` 数据库表。
+- 主题解析顺序：用户已保存主题 → 管理员全局默认主题 → 内置玻璃主题兜底。
+- 管理员在“系统设置 → 外观”编辑全局默认主题；该设置不覆盖已有个人偏好。
+
 ## 实现边界
 
 1. 在主题预设模块中定义可序列化的核心令牌与默认值，并安全解析旧的空或无效 `theme_config`。
@@ -48,3 +54,27 @@
 - 用户修改核心令牌后，无刷新即时生效；刷新或重新登录后仍可恢复。
 - 失败保存不会让本地主题与数据库状态不一致。
 - 高级主题配置不会暴露给普通用户。
+
+## 实际变更文件
+
+| 文件 | 变更 |
+| --- | --- |
+| `src/theme/presets.ts` | 定义核心令牌、预设默认值、安全 JSON 解析与 Ant Design token 映射。 |
+| `src/store/theme.ts` | 保存和恢复当前预设、模式与用户自定义令牌 JSON。 |
+| `src/App.tsx` | 应用 Ant Design token 和 CSS 语义变量；仅在玻璃预设渲染壁纸层。 |
+| `src/components/ThemePresetPanel.tsx` | 添加核心令牌编辑、即时预览、保存、重置及失败回滚。 |
+| `src/styles/liquid-glass.css` | 将玻璃材质限制到 `glass` 预设，并为实体主题设置语义变量。 |
+| `src/styles/glass-overrides.css` | 添加编辑器布局及实体组件覆盖，移除非玻璃主题的透明和模糊。 |
+| `src/i18n/locales/zh.ts`、`src/i18n/locales/en.ts` | 增加编辑器中英文文案。 |
+| `README.md`、`README.zh.md` | 说明主题材质差异、用户可编辑范围与管理员高级配置边界。 |
+| 后端系统设置 API 与 `src/pages/admin/SettingsPage.tsx` | 保存和编辑管理员全局默认主题。 |
+
+后端无需新增字段或接口：既有用户 `theme_config` 文本字段与
+`PUT /v1/auth/me/theme` 已用于存储本次的核心令牌 JSON。
+
+AI 生成主题入口不在本次产品范围内，已从用户外观面板及其文案中移除。
+
+## 验证记录
+
+- `npm run build`：通过。
+- 产物仍有现有 `config.js` 无法打包与主 JavaScript chunk 大于 500 kB 的 Vite 警告；不影响构建结果。

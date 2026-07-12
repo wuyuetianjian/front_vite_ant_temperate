@@ -9,6 +9,7 @@ import { useSystemSettingsStore } from '../../store/systemSettings'
 import ChangePasswordModal from '../../components/ChangePasswordModal'
 import Setup2FAModal from '../../components/Setup2FAModal'
 import Disable2FAModal from '../../components/Disable2FAModal'
+import ThemePresetPanel from '../../components/ThemePresetPanel'
 
 export default function ProfilePage() {
   const { t } = useTranslation()
@@ -20,14 +21,14 @@ export default function ProfilePage() {
   const [setup2FAOpen, setSetup2FAOpen] = useState(false)
   const [disable2FAOpen, setDisable2FAOpen] = useState(false)
 
-  const visibleRoles = user?.roles.filter((r) => r.name !== '_effective') ?? []
+  const visibleRoles = user?.roles?.filter((r) => r.name !== '_effective') ?? []
 
   const handleSetupSuccess = async () => {
     setSetup2FAOpen(false)
     try {
       const updated = await authApi.me()
       updateUser(updated)
-    } catch (_) { /* ignore */ }
+    } catch { /* ignore */ }
   }
 
   const handleDisableSuccess = async () => {
@@ -51,6 +52,8 @@ export default function ProfilePage() {
         gap: 16,
         alignItems: 'stretch',
       }}>
+        <ThemePresetPanel />
+
         {/* 账户信息 — 始终撑满整行 */}
         <Card bordered={false} style={{ borderRadius: 12, gridColumn: '1 / -1' }}>
           <Space align="start" size={20} style={{ marginBottom: 24 }}>

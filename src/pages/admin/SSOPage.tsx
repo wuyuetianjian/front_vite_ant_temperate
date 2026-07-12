@@ -6,7 +6,7 @@ import {
 } from 'antd'
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
-  CheckCircleOutlined, StopOutlined,
+  CheckCircleOutlined, StopOutlined, KeyOutlined,
 } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { ssoApi } from '../../api/sso'
@@ -18,6 +18,7 @@ const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
 
 type ProviderType = SSOProvider['type']
+type TestStatus = 'idle' | 'testing' | 'passed' | 'failed'
 
 const TYPE_LABELS: Record<ProviderType, { label: string; color: string }> = {
   oauth1:  { label: 'OAuth 1.0', color: 'geekblue' },
@@ -30,6 +31,7 @@ const TYPE_LABELS: Record<ProviderType, { label: string; color: string }> = {
 
 // ── Per-protocol field definitions ─────────────────────────────────────────
 interface FieldDef { key: string; label: string; textarea?: boolean; password?: boolean; hint?: string; required?: boolean; radioOptions?: { value: string; label: string }[] }
+const FORM_META_KEYS = new Set(['name', 'type', 'enabled', 'icon', 'sort_order', 'test_username', 'test_password'])
 
 const FIELDS: Record<ProviderType, FieldDef[]> = {
   oauth1: [
@@ -56,37 +58,39 @@ const FIELDS: Record<ProviderType, FieldDef[]> = {
     { key: 'user_attr_name',     label: 'Name Attribute',     hint: 'default: name' },
   ],
   oidc: [
-    { key: 'client_id',          label: 'Client ID',    required: true },
-    { key: 'client_secret',      label: 'Client Secret', password: true, required: true },
-    { key: 'issuer',             label: 'Issuer URL',   required: true, hint: 'e.g. https://accounts.google.com' },
-    { key: 'scopes',             label: 'Scopes',       hint: 'default: openid profile email' },
-    { key: 'pkce',               label: 'PKCE',         hint: 'true / false' },
-    { key: 'user_attr_username', label: 'Username Claim', hint: 'default: preferred_username' },
-    { key: 'user_attr_email',    label: 'Email Claim',    hint: 'default: email' },
-    { key: 'user_attr_name',     label: 'Name Claim',     hint: 'default: name' },
+    { key: 'client_id',          label: 'Client ID',       required: true, hint: 'Keycloak client → Settings → Client ID' },
+    { key: 'client_secret',      label: 'Client Secret',   password: true, required: true, hint: 'Keycloak client → Credentials → Client secret' },
+    { key: 'issuer',             label: 'Issuer URL',      required: true, hint: 'realm issuer, e.g. http://<host>/realms/<realm>' },
+    { key: 'scopes',             label: 'Scopes',          hint: 'space-separated; must include openid' },
+    { key: 'pkce',               label: 'PKCE Code Challenge Method', hint: 'S256 to enable; empty to disable' },
+    { key: 'user_attr_username', label: 'Username Claim',  hint: 'default: preferred_username' },
+    { key: 'user_attr_email',    label: 'Email Claim',     hint: 'default: email' },
+    { key: 'user_attr_name',     label: 'Name Claim',      hint: 'default: name' },
   ],
   saml1: [
-    { key: 'entity_id',          label: 'SP Entity ID',   required: true },
-    { key: 'sso_url',            label: 'IdP SSO URL',    required: true },
-    { key: 'slo_url',            label: 'IdP SLO URL' },
-    { key: 'idp_certificate',    label: 'IdP Certificate (PEM)', textarea: true, required: true },
-    { key: 'name_id_format',     label: 'Name ID Format', hint: 'email / persistent / transient' },
-    { key: 'attr_username',      label: 'Username Attribute' },
-    { key: 'attr_email',         label: 'Email Attribute' },
-    { key: 'attr_display_name',  label: 'Display Name Attribute' },
+    { key: 'idp_entity_id',      label: 'IdP Entity ID',              required: true, hint: 'Keycloak realm entityID, e.g. http://127.0.0.1:8080/realms/test' },
+    { key: 'sp_entity_id',       label: 'Client ID',                  required: true, hint: 'the SAML client’s Client ID (must be a SAML client, absolute URI)' },
+    { key: 'idp_sso_url',        label: 'Single Sign-On Service URL', required: true, hint: '.../realms/<realm>/protocol/saml' },
+    { key: 'slo_url',            label: 'Single Logout Service URL',  hint: 'optional' },
+    { key: 'idp_certificate',    label: 'IdP Signing Certificate',    textarea: true, required: true, hint: 'realm cert from .../protocol/saml/descriptor — not the client cert' },
+    { key: 'name_id_format',     label: 'Name ID Format',             hint: 'empty = IdP default (Keycloak: username); or email / persistent / transient' },
+    { key: 'user_attr_username', label: 'Username Attribute',         hint: 'empty = use NameID (Keycloak username); or an assertion attribute name e.g. email' },
+    { key: 'user_attr_email',    label: 'Email Attribute',            hint: 'assertion email attribute' },
+    { key: 'user_attr_name',     label: 'Display Name Attribute',     hint: 'assertion display-name attribute' },
   ],
   saml2: [
-    { key: 'entity_id',          label: 'SP Entity ID',        required: true },
-    { key: 'sso_url',            label: 'IdP SSO URL',         required: true },
-    { key: 'slo_url',            label: 'IdP SLO URL' },
-    { key: 'idp_certificate',    label: 'IdP Certificate (PEM)', textarea: true, required: true },
-    { key: 'sp_private_key',     label: 'SP Private Key (PEM)', textarea: true },
-    { key: 'sp_certificate',     label: 'SP Certificate (PEM)', textarea: true },
-    { key: 'name_id_format',     label: 'Name ID Format',       hint: 'email / persistent / transient' },
-    { key: 'sign_requests',      label: 'Sign Requests',        hint: 'true / false' },
-    { key: 'attr_username',      label: 'Username Attribute' },
-    { key: 'attr_email',         label: 'Email Attribute' },
-    { key: 'attr_display_name',  label: 'Display Name Attribute' },
+    { key: 'idp_entity_id',      label: 'IdP Entity ID',              required: true, hint: 'Keycloak realm entityID, e.g. http://127.0.0.1:8080/realms/test' },
+    { key: 'sp_entity_id',       label: 'Client ID',                  required: true, hint: 'the SAML client’s Client ID (must be a SAML client, absolute URI)' },
+    { key: 'idp_sso_url',        label: 'Single Sign-On Service URL', required: true, hint: '.../realms/<realm>/protocol/saml' },
+    { key: 'slo_url',            label: 'Single Logout Service URL',  hint: 'optional' },
+    { key: 'idp_certificate',    label: 'IdP Signing Certificate',    textarea: true, required: true, hint: 'realm cert from .../protocol/saml/descriptor — not the client cert' },
+    { key: 'sp_private_key',     label: 'SP Private Key',             textarea: true, hint: 'pairs with the certificate; use the Generate button below' },
+    { key: 'sp_certificate',     label: 'Signing Keys Certificate',   textarea: true, hint: 'import into the Keycloak client’s Keys → Signing keys' },
+    { key: 'name_id_format',     label: 'Name ID Format',             hint: 'empty = IdP default (Keycloak: username); or email / persistent / transient' },
+    { key: 'sign_request',       label: 'Client signature required',  hint: 'true / false' },
+    { key: 'user_attr_username', label: 'Username Attribute',         hint: 'empty = use NameID (Keycloak username); or an assertion attribute name e.g. email' },
+    { key: 'user_attr_email',    label: 'Email Attribute',            hint: 'assertion email attribute' },
+    { key: 'user_attr_name',     label: 'Display Name Attribute',     hint: 'assertion display-name attribute' },
   ],
   ldap: [
     { key: 'host',               label: 'Host',             required: true },
@@ -120,7 +124,11 @@ export default function SSOPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<SSOProvider | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [testStatus, setTestStatus] = useState<TestStatus>('idle')
+  const [testMessage, setTestMessage] = useState('')
+  const [testedSignature, setTestedSignature] = useState('')
   const [selectedType, setSelectedType] = useState<ProviderType>('oauth2')
+  const [generatingKey, setGeneratingKey] = useState(false)
   const [form] = Form.useForm()
   const { localAuthEnabled, setLocalAuthEnabled } = useAuthSettingsStore()
 
@@ -136,6 +144,7 @@ export default function SSOPage() {
   const openCreate = () => {
     setEditing(null)
     setSelectedType('oauth2')
+    resetTestState()
     form.resetFields()
     form.setFieldsValue({ type: 'oauth2', enabled: false, sort_order: 0, icon: '' })
     setModalOpen(true)
@@ -144,6 +153,7 @@ export default function SSOPage() {
   const openEdit = (p: SSOProvider) => {
     setEditing(p)
     setSelectedType(p.type)
+    resetTestState()
     form.resetFields()
     form.setFieldsValue({
       name: p.name,
@@ -156,8 +166,40 @@ export default function SSOPage() {
     setModalOpen(true)
   }
 
-  const handleSubmit = async (values: Record<string, string | boolean | number>) => {
+  const resetTestState = () => {
+    setTestStatus('idle')
+    setTestMessage('')
+    setTestedSignature('')
+  }
+
+  const providerConfigFromValues = (values: Record<string, string | boolean | number>) => {
+    const config: Record<string, string> = {}
+    for (const [k, v] of Object.entries(values)) {
+      if (FORM_META_KEYS.has(k)) continue
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        config[k] = String(v)
+      }
+    }
+    // When editing, preserve existing values for fields left blank (e.g. password fields
+    // that browsers refuse to visually pre-fill but whose values are in editing.config).
+    if (editing) {
+      for (const [k, v] of Object.entries(editing.config ?? {})) {
+        if (!(k in config) && v) config[k] = v
+      }
+    }
+    return config
+  }
+
+  const testSignatureFromValues = (values: Record<string, string | boolean | number>) => JSON.stringify({
+    type: values.type,
+    config: providerConfigFromValues(values),
+    username: values.test_username,
+    password: values.test_password,
+  })
+
+  const saveProvider = async (values: Record<string, string | boolean | number>, skipTest: boolean) => {
     const { name, type, enabled, icon, sort_order, ...configValues } = values
+    void configValues
     if (enabled) {
       const enabledCount = providers.filter((x) => x.enabled && x.id !== (editing?.id ?? -1)).length
       if (enabledCount >= 1) {
@@ -165,12 +207,14 @@ export default function SSOPage() {
         return
       }
     }
-    const config: Record<string, string> = {}
-    for (const [k, v] of Object.entries(configValues)) {
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        config[k] = String(v)
+    if (type === 'ldap' && !skipTest) {
+      const signature = testSignatureFromValues(values)
+      if (testStatus !== 'passed' || testedSignature !== signature) {
+        message.error(t('sso.testRequired'))
+        return
       }
     }
+    const config = providerConfigFromValues(values)
     setSubmitting(true)
     try {
       const payload = {
@@ -192,6 +236,52 @@ export default function SSOPage() {
       message.error(apiError(err))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleSubmit = async (values: Record<string, string | boolean | number>) => {
+    await saveProvider(values, false)
+  }
+
+  const handleGenerateSamlKeyPair = async () => {
+    setGeneratingKey(true)
+    try {
+      const cn = String(form.getFieldValue('sp_entity_id') || form.getFieldValue('name') || '')
+      const { private_key, certificate } = await ssoApi.generateSamlKeyPair(cn)
+      form.setFieldsValue({ sp_private_key: private_key, sp_certificate: certificate, sign_request: 'true' })
+      message.success(t('sso.keyPairGenerated'))
+    } catch (err) {
+      message.error(apiError(err))
+    } finally {
+      setGeneratingKey(false)
+    }
+  }
+
+  const handleSaveWithoutTest = async () => {
+    const values = await form.validateFields()
+    await saveProvider(values, true)
+  }
+
+  const handleTestProvider = async () => {
+    const values = await form.validateFields()
+    const config = providerConfigFromValues(values)
+    const signature = testSignatureFromValues(values)
+    setTestStatus('testing')
+    setTestMessage('')
+    try {
+      const result = await ssoApi.test({
+        type: values.type as string,
+        config,
+        username: values.test_username as string,
+        password: values.test_password as string,
+      })
+      setTestStatus('passed')
+      setTestedSignature(signature)
+      setTestMessage(result.display_name ? t('sso.testPassedWithName', { name: result.display_name }) : t('sso.testPassed'))
+    } catch (err) {
+      setTestStatus('failed')
+      setTestedSignature('')
+      setTestMessage(apiError(err) || t('sso.testFailed'))
     }
   }
 
@@ -338,13 +428,24 @@ export default function SSOPage() {
         onOk={() => form.submit()}
         onCancel={() => setModalOpen(false)}
         confirmLoading={submitting}
-        okText={t('common.save')}
-        cancelText={t('common.cancel')}
+        footer={[
+          <Button key="cancel" onClick={() => setModalOpen(false)}>{t('common.cancel')}</Button>,
+          selectedType === 'ldap' && <Button key="skip" onClick={handleSaveWithoutTest} loading={submitting}>{t('sso.saveWithoutTest')}</Button>,
+          <Button key="save" type="primary" onClick={() => form.submit()} loading={submitting}>{t('common.save')}</Button>,
+        ].filter(Boolean)}
         width={640}
         destroyOnClose
         styles={{ body: { maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 } }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 12 }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          onValuesChange={() => {
+            if (selectedType === 'ldap') resetTestState()
+          }}
+          style={{ marginTop: 12 }}
+        >
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item label={t('common.name')} name="name" rules={[{ required: true }]}>
@@ -368,7 +469,7 @@ export default function SSOPage() {
               <Form.Item label={t('sso.protocol')} name="type" rules={[{ required: true }]}>
                 <Select
                   disabled={Boolean(editing)}
-                  onChange={(v) => setSelectedType(v as ProviderType)}
+                  onChange={(v) => { setSelectedType(v as ProviderType); resetTestState() }}
                   options={Object.entries(TYPE_LABELS).map(([v, m]) => ({ value: v, label: m.label }))}
                 />
               </Form.Item>
@@ -406,6 +507,43 @@ export default function SSOPage() {
               )}
             </Form.Item>
           ))}
+
+          {(selectedType === 'saml1' || selectedType === 'saml2') && (
+            <Form.Item extra={<Text type="secondary" style={{ fontSize: 11 }}>{t('sso.generateKeyPairHint')}</Text>}>
+              <Button onClick={handleGenerateSamlKeyPair} loading={generatingKey} icon={<KeyOutlined />}>
+                {t('sso.generateKeyPair')}
+              </Button>
+            </Form.Item>
+          )}
+
+          <Divider style={{ margin: '8px 0 16px' }}>{t('sso.testSection')}</Divider>
+          {selectedType === 'ldap' ? (
+            <>
+              <Alert
+                type={testStatus === 'passed' ? 'success' : testStatus === 'failed' ? 'error' : 'info'}
+                showIcon
+                message={testMessage || t('sso.testHint')}
+                style={{ marginBottom: 16, borderRadius: 8 }}
+              />
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item label={t('sso.testUsername')} name="test_username" rules={[{ required: true, message: t('sso.testUsernameRequired') }]}>
+                    <Input autoComplete="username" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label={t('sso.testPassword')} name="test_password" rules={[{ required: true, message: t('sso.testPasswordRequired') }]}>
+                    <Input.Password autoComplete="current-password" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Button onClick={handleTestProvider} loading={testStatus === 'testing'} icon={<CheckCircleOutlined />}>
+                {t('sso.testAccount')}
+              </Button>
+            </>
+          ) : (
+            <Alert type="info" showIcon message={t('sso.testUnsupported')} style={{ borderRadius: 8 }} />
+          )}
         </Form>
       </Modal>
 

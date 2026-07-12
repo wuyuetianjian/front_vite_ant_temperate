@@ -75,6 +75,37 @@ BACKEND_URL=http://localhost:8000
 | **服务账号** | `/admin/service-accounts` | `ListServiceAccounts` |
 | 个人设置 | `/admin/profile` | （任意已登录用户） |
 
+### 用户主题预设
+
+个人设置页包含外观主题面板，支持默认、暗黑、类 MUI、类 shadcn、卡通、
+插画、类 Bootstrap 拟物化、玻璃和极客风格。只有玻璃风格使用壁纸、透明和
+模糊效果，其余预设均为实体表面。用户还可自定义核心令牌（颜色、文字、边框、
+圆角、密度和色彩模式），通过 `/v1/auth/me/theme` 保存，并在下次登录时从
+`/v1/auth/me` 自动恢复；组件级高级令牌保留给管理员配置。管理员可在“系统设置
+→ 外观”中设置全局默认预设、色彩模式和核心令牌 JSON，配置保存至
+`system_settings`，只作用于尚未保存个人主题偏好的用户。
+系统默认主题也可在同一设置面板中恢复为内置默认配置。
+
+### 认证与用户管理
+
+登录页对本地用户和 LDAP 用户复用同一个用户名/密码表单。后端会先认证本地用户；
+当本地用户不存在或本地密码校验失败时，再回退到 LDAP。LDAP provider 不会作为
+单独的登录按钮显示；OIDC 和 SAML provider 会作为跳转登录按钮显示。
+
+SSO provider 页面支持在保存 LDAP 配置前进行账号测试。测试会使用当前表单中输入
+的配置和测试账号密码；测试通过后才能保存。管理员也可以选择“不测试直接保存”。
+
+用户管理页会把用户来源显示为 `SSO 名称 (协议)`，例如 `Keycloak (OIDC)`、
+`Corporate LDAP (LDAP)` 或 `Local (LOCAL)`。管理员可以重置本地用户密码；后端
+生成随机密码，前端只在弹窗中展示一次并支持复制。LDAP 用户密码由 LDAP 管理，
+不会在用户管理页重置。
+
+在线会话页会用同样的 `SSO 名称 (协议)` 格式显示每个会话的登录来源。该字段
+上线前已存在的会话可能显示为空，需要用户重新登录后才会写入。
+
+被禁用用户和权限不足的已登录用户会进入 Forbidden 页面。被禁用账号显示专门的
+账号禁用提示；其他授权失败显示权限不足提示。
+
 ### 服务账号页面
 
 服务账号页面允许管理员创建和管理机器/服务身份，使其可以使用长期有效的
@@ -189,6 +220,21 @@ services:
 1. 输入用户名 + 密码 → 服务端返回 `requires_2fa: true` 及 `pre_auth_token`。
 2. 前端展示 6 位验证码输入框。
 3. 用户提交验证码 → 调用 `/v1/auth/verify-totp` → 获得完整会话 Token。
+
+LDAP 复用同一个用户名/密码登录表单。前端统一提交到 `/v1/auth/login`；
+后端先校验本地用户和密码，本地用户不存在或本地密码校验失败时，再尝试启用的
+LDAP 认证，并在成功后同步本地用户。LDAP 不会在登录页渲染为单独的 SSO 登录按钮。
+
+OIDC 与 SAML provider 会作为跳转登录按钮渲染，点击后打开 `/v1/sso/login/{id}`。
+SSO 管理页（`/admin/sso`）按协议类型渲染配置字段；SAML 2.0 包含 IdP Entity ID、
+IdP SSO URL、IdP Certificate、SP Entity ID，以及当 IdP 要求签名时使用的 SP
+私钥/证书。「生成 SP 证书」按钮会调用 `POST /v1/sso/saml/keypair` 生成自签名
+SP 密钥对并自动填入。配置字段标签与 Keycloak 字段名一致。provider 配置与
+IdP（Keycloak）设置见后端 `docs/sso-saml-design.md`。
+
+退出 SSO 会话会同时注销 IdP 会话：登出接口返回 `sso_logout_url`，前端把浏览器
+跳转过去（OIDC end-session / SAML 单点登出）后再回到登录页。用户列表新增展示
+SSO 采集到的**邮箱**列。
 
 ---
 

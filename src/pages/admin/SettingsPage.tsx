@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  Button, Card, Form, Input, InputNumber, Spin, Switch, Typography, message,
+  Button, Card, ColorPicker, Form, Input, InputNumber, Radio, Select, Slider, Spin, Switch, Typography, message,
 } from 'antd'
-import { AppstoreOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons'
+import type { FormInstance } from 'antd'
+import { AppstoreOutlined, UploadOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { settingsApi } from '../../api/settings'
 import { apiError } from '../../api/client'
 import { useWallpaperStore } from '../../store/wallpaper'
 import { isCustomIcon, useSystemSettingsStore } from '../../store/systemSettings'
 import type { SystemSettings } from '../../types'
+import { getDefaultThemeConfig, parseThemeConfig, previewThemeColor, serializeThemeConfig, themePresets, type ThemeCustomConfig, type ThemeMode, type ThemePresetKey } from '../../theme/presets'
 
 const MAX_BYTES = 4 * 1024 * 1024
+const themeColorOptions = (token: keyof ThemeCustomConfig) =>
+  token === 'backgroundColor' || token === 'surfaceColor'
+    ? ['#ffffff', '#f8fafc', '#f5f5f5', '#f1f5f9', '#f8fafc', '#fff7ed', '#fdf4ff', '#0f172a', '#111827']
+    : ['#ffffff', '#1677ff', '#1976d2', '#7c3aed', '#0ea5e9', '#16a34a', '#f97316', '#e11d48', '#18181b']
 
 function IconPreview({ value }: { value?: string }) {
   return (
@@ -27,6 +33,34 @@ function IconPreview({ value }: { value?: string }) {
       )}
     </div>
   )
+}
+
+function GlobalThemeTokenEditor({ form }: { form: FormInstance<SystemSettings> }) {
+  const { t } = useTranslation()
+  const preset = (Form.useWatch('default_theme_preset', form) || 'glass') as ThemePresetKey
+  const mode = (Form.useWatch('default_theme_mode', form) || 'light') as ThemeMode
+  const config = parseThemeConfig(Form.useWatch('default_theme_config', form), preset, mode)
+  const update = (patch: Partial<ThemeCustomConfig>) => form.setFieldValue('default_theme_config', serializeThemeConfig({ ...config, ...patch }))
+  const reset = () => {
+    const defaults = getDefaultThemeConfig(preset, mode)
+    form.setFieldValue('default_theme_config', '{}')
+    ;(['primaryColor', 'backgroundColor', 'surfaceColor', 'textColor', 'textSecondaryColor', 'borderColor'] as const)
+      .forEach((key) => previewThemeColor(key, defaults[key]))
+  }
+  const color = (label: string, key: keyof Pick<ThemeCustomConfig, 'primaryColor' | 'backgroundColor' | 'surfaceColor' | 'textColor' | 'textSecondaryColor' | 'borderColor'>) => (
+    <div className="theme-token-color"><span>{label}</span><span className="theme-token-color-input"><ColorPicker value={config[key]} onChange={(_, hex) => previewThemeColor(key, hex)} onChangeComplete={(next) => update({ [key]: next.toHexString() })} /><Input value={config[key]} readOnly /></span><span className="theme-color-options">{themeColorOptions(key).map((color) => <button key={color} type="button" aria-label={color} style={{ background: color }} onClick={() => update({ [key]: color })} />)}</span></div>
+  )
+  return <>
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+      <Button size="small" icon={<ReloadOutlined />} onClick={reset}>{t('theme.resetPreset')}</Button>
+    </div>
+    <div className="theme-token-grid" style={{ marginTop: 0 }}>
+      {color(t('theme.primaryColor'), 'primaryColor')}{color(t('theme.backgroundColor'), 'backgroundColor')}{color(t('theme.surfaceColor'), 'surfaceColor')}
+      {color(t('theme.textColor'), 'textColor')}{color(t('theme.textSecondaryColor'), 'textSecondaryColor')}{color(t('theme.borderColor'), 'borderColor')}
+      <label className="theme-token-slider"><span>{t('theme.radius')}</span><Slider min={0} max={32} value={config.borderRadius} onChange={(borderRadius) => update({ borderRadius: Number(borderRadius) })} /><strong>{config.borderRadius}px</strong></label>
+      <label className="theme-token-density"><span>{t('theme.density')}</span><Radio.Group value={config.density} onChange={(event) => update({ density: event.target.value })} size="small"><Radio.Button value="compact">{t('theme.compact')}</Radio.Button><Radio.Button value="default">{t('theme.comfortable')}</Radio.Button></Radio.Group></label>
+    </div>
+  </>
 }
 
 export default function SettingsPage() {
@@ -170,6 +204,19 @@ export default function SettingsPage() {
                   <Typography.Text style={{ fontSize: 12, color: 'var(--glass-text-secondary)' }}>
                     {t('settings.wallpaperSizeHint')}
                   </Typography.Text>
+                </div>
+              </div>
+
+              <Typography.Title level={5} style={{ marginTop: 28 }}>{t('settings.defaultTheme')}</Typography.Title>
+              <Typography.Paragraph type="secondary">{t('settings.defaultThemeHint')}</Typography.Paragraph>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0 16px' }}>
+                <Form.Item label={t('settings.defaultThemePreset')} name="default_theme_preset"><Select options={themePresets.map((item) => ({ value: item.key, label: t(`theme.presets.${item.key}`) }))} /></Form.Item>
+                <Form.Item label={t('settings.defaultThemeMode')} name="default_theme_mode"><Select options={[{ value: 'light', label: t('theme.light') }, { value: 'dark', label: t('theme.dark') }, { value: 'system', label: t('theme.system') }]} /></Form.Item>
+                <Form.Item name="default_theme_config" hidden><Input /></Form.Item>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <Typography.Text strong>{t('settings.defaultThemeConfig')}</Typography.Text>
+                  <Typography.Paragraph type="secondary" style={{ margin: '4px 0 12px' }}>{t('settings.defaultThemeConfigHint')}</Typography.Paragraph>
+                  <GlobalThemeTokenEditor form={form} />
                 </div>
               </div>
             </Card>

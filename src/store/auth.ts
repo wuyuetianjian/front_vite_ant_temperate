@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { User } from '../types'
+import { useThemeStore } from './theme'
 
 interface AuthState {
   token: string | null
@@ -19,13 +20,19 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
 
-      setAuth: (token, user) => set({ token, user }),
+      setAuth: (token, user) => {
+        useThemeStore.getState().hydrateTheme(user)
+        set({ token, user })
+      },
 
-      updateUser: (user) => set({ user }),
+      updateUser: (user) => {
+        useThemeStore.getState().hydrateTheme(user)
+        set({ user })
+      },
 
       clearAuth: () => set({ token: null, user: null }),
 
-      isAuthenticated: () => Boolean(get().token),
+      isAuthenticated: () => Boolean(get().token || localStorage.getItem('auth_token')),
 
       isAdmin: () => {
         const user = get().user

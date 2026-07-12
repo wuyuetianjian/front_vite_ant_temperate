@@ -75,6 +75,48 @@ Fields exposed by `src/config.ts`:
 | **Service Accounts** | `/admin/service-accounts` | `ListServiceAccounts` |
 | Profile | `/admin/profile` | (any authenticated user) |
 
+### User Theme Presets
+
+Profile includes an appearance panel with Ant Design-inspired style presets:
+Default, Dark, MUI-like, shadcn-like, Cartoon, Illustration, Bootstrap tactile,
+Glass, and Geek. Glass is the only preset that uses wallpaper, transparency, and
+blur; all other presets use solid surfaces. Users can additionally customize core
+tokens (colors, text, borders, radius, density, and color mode). The chosen preset
+and tokens are stored through `/v1/auth/me/theme` and restored from `/v1/auth/me`
+on the next login. Component-level advanced tokens are reserved for administrator
+configuration.
+
+Administrators can set the global fallback preset, color mode, and core-token JSON
+in **System Settings → Appearance**. It is stored in `system_settings` and applies
+only to users without a saved personal theme preference. The system default theme
+can be restored to the built-in default from the same settings panel.
+
+### Authentication and User Management
+
+The login page uses one username/password form for both local and LDAP users. The
+backend checks the local user first, then falls back to LDAP if the local user is
+missing or the password check fails. LDAP providers are not shown as separate
+login buttons. OIDC and SAML providers are shown as redirect login buttons.
+
+The SSO provider page supports LDAP configuration testing before saving. The test
+uses the values currently entered in the form plus the supplied test account; the
+provider is saved only after a successful test. Administrators can also choose to
+save without testing.
+
+The Users page shows each user's auth source as `SSO name (PROTOCOL)`, for
+example `Keycloak (OIDC)`, `Corporate LDAP (LDAP)`, or `Local (LOCAL)`. Admins
+can reset local users' passwords; the server generates a random password and the
+frontend displays it once in a copyable dialog. LDAP users' passwords are managed
+by LDAP and are not reset from this page.
+
+The Online Sessions page shows each session's login source with the same
+`SSO name (PROTOCOL)` format. Existing sessions created before this field was
+added may show an empty value until the user logs in again.
+
+Disabled users and authenticated users without enough permissions are sent to the
+Forbidden page. Disabled accounts show a specific disabled-account message; other
+authorization failures show a permission-denied message.
+
 ### Service Accounts Page
 
 The Service Accounts page lets administrators create and manage machine/service
@@ -191,6 +233,25 @@ The platform supports TOTP-based 2FA (Google Authenticator, Microsoft Authentica
 1. Username + password → server returns `requires_2fa: true` + `pre_auth_token`.
 2. Frontend shows a 6-digit TOTP input.
 3. User submits the code → `/v1/auth/verify-totp` → receives the session token.
+
+LDAP uses the same username/password form as local login. The frontend submits
+to `/v1/auth/login`; the backend checks the local user first, then falls back to
+the enabled LDAP provider if the local user is missing or the local password
+check fails. LDAP providers are not rendered as separate SSO login buttons.
+
+OIDC and SAML providers render as redirect login buttons and open
+`/v1/sso/login/{id}`. The SSO admin page (`/admin/sso`) renders per-type config
+fields; for SAML 2.0 these include IdP Entity ID, IdP SSO URL, IdP Certificate,
+SP Entity ID, and the optional SP key/certificate used when the IdP requires
+signed requests. A *Generate SP Certificate* button creates a self-signed SP key
+pair (via `POST /v1/sso/saml/keypair`) and fills the key/certificate fields.
+Config field labels mirror the Keycloak field names. Provider setup and IdP
+(Keycloak) configuration are documented in the backend `docs/sso-saml-design.md`.
+
+Logout of an SSO session also terminates the IdP session: the logout call
+returns an `sso_logout_url` and the app redirects the browser there (OIDC
+end-session / SAML single logout) before returning to the login page. The users
+table shows the SSO-captured **email** column.
 
 ---
 

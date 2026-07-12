@@ -80,6 +80,13 @@ export default function SessionsPage() {
     { title: t('common.id'), dataIndex: 'id', width: 70 },
     { title: t('sessions.user'), dataIndex: 'username', ellipsis: true },
     {
+      title: t('sessions.loginSource'),
+      dataIndex: 'login_source',
+      width: 170,
+      ellipsis: true,
+      render: (_, record) => record.login_source || record.loginSource || <Typography.Text type="secondary">—</Typography.Text>,
+    },
+    {
       title: t('sessions.ip'),
       dataIndex: 'ip',
       ellipsis: true,

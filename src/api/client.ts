@@ -19,8 +19,18 @@ client.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       resetAuth()
-      if (!window.location.pathname.startsWith('/login')) {
+      if (!window.location.pathname.startsWith('/login') && window.location.pathname !== '/403') {
         window.location.replace('/login')
+      }
+    } else if (err.response?.status === 403) {
+      const reason = err.response?.data?.reason
+      if (reason === 'USER_DISABLED') {
+        resetAuth()
+        if (window.location.pathname !== '/403') {
+          window.location.replace('/403?reason=disabled')
+        }
+      } else if (window.location.pathname !== '/403' && !window.location.pathname.startsWith('/login')) {
+        window.location.replace('/403')
       }
     }
     return Promise.reject(err)
