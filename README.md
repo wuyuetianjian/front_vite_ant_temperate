@@ -77,14 +77,23 @@ Fields exposed by `src/config.ts`:
 
 ### User Theme Presets
 
-Profile includes an appearance panel with Ant Design-inspired style presets:
-Default, Dark, MUI-like, shadcn-like, Cartoon, Illustration, Bootstrap tactile,
-Glass, and Geek. Glass is the only preset that uses wallpaper, transparency, and
-blur; all other presets use solid surfaces. Users can additionally customize core
-tokens (colors, text, borders, radius, density, and color mode). The chosen preset
-and tokens are stored through `/v1/auth/me/theme` and restored from `/v1/auth/me`
-on the next login. Component-level advanced tokens are reserved for administrator
-configuration.
+Profile includes an appearance panel with nine presets, each a faithful port of an
+official Ant Design theme: Default, Dark, MUI-like, shadcn-like, Cartoon,
+Illustration, Bootstrap tactile, Glass, and Geek. Every preset is an `antd-style`
+hook under `src/theme/antd/` returning a full `ConfigProviderProps` — design tokens,
+per-component overrides, and component-level `classNames` effects (e.g. Geek's neon
+glow, MUI's uppercase + ripple buttons, Bootstrap's gradient buttons, Illustration's
+hard drop-shadows). Glass is the only preset that keeps the wallpaper / translucency
+/ blur material (`liquid-glass.css`, scoped to the glass preset); all other presets
+are styled entirely by their official antd theme. See `docs/theme-system.md`.
+
+Users can additionally customize core tokens (primary / background / surface / text
+/ border colors, radius, density, and light/dark/system mode). Official values are
+the defaults; overrides apply only to tokens the user actually changed. Token-driven
+presets reflect every override; a few deeply-customized presets (MUI, shadcn) hard-
+code button color/radius in their effect classes, so those specific elements keep the
+official look. Preset and tokens are stored through `/v1/auth/me/theme` and restored
+from `/v1/auth/me` on the next login.
 
 Administrators can set the global fallback preset, color mode, and core-token JSON
 in **System Settings → Appearance**. It is stored in `system_settings` and applies
@@ -105,9 +114,11 @@ save without testing.
 
 The Users page shows each user's auth source as `SSO name (PROTOCOL)`, for
 example `Keycloak (OIDC)`, `Corporate LDAP (LDAP)`, or `Local (LOCAL)`. Admins
-can reset local users' passwords; the server generates a random password and the
-frontend displays it once in a copyable dialog. LDAP users' passwords are managed
-by LDAP and are not reset from this page.
+can delete one auth source from a multi-source user directly from the source tag;
+the backend rejects deleting the user's last remaining source. Admins can reset
+local users' passwords; the server generates a random password and the frontend
+displays it once in a copyable dialog. LDAP users' passwords are managed by LDAP
+and are not reset from this page.
 
 The Online Sessions page shows each session's login source with the same
 `SSO name (PROTOCOL)` format. Existing sessions created before this field was

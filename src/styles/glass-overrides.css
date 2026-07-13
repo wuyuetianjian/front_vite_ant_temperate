@@ -1,6 +1,8 @@
 /* ── ANT DESIGN LIQUID GLASS OVERRIDES ── */
 /* All values reference CSS variables — dark mode is automatic via [data-theme="dark"] */
 
+/* Scoped to the glass preset so official themes keep their own component styling. */
+:root[data-theme-preset="glass"] {
 /* ── BUTTON ── */
 .ant-btn-default {
   background: rgba(255, 255, 255, 0.10) !important;
@@ -14,10 +16,10 @@
   background: rgba(255, 255, 255, 0.20) !important;
   border-color: rgba(255, 255, 255, 0.55) !important;
 }
-[data-theme="dark"] .ant-btn-default {
+&[data-theme="dark"] .ant-btn-default {
   background: rgba(255, 255, 255, 0.08) !important;
 }
-[data-theme="dark"] .ant-btn-default:not(:disabled):hover {
+&[data-theme="dark"] .ant-btn-default:not(:disabled):hover {
   background: rgba(255, 255, 255, 0.14) !important;
 }
 
@@ -41,7 +43,7 @@
 .ant-btn-text:not(.ant-btn-dangerous):not(:disabled):hover {
   background: rgba(255, 255, 255, 0.12) !important;
 }
-[data-theme="dark"] .ant-btn-text:not(.ant-btn-dangerous):not(:disabled):hover {
+&[data-theme="dark"] .ant-btn-text:not(.ant-btn-dangerous):not(:disabled):hover {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -109,7 +111,7 @@
   border-bottom: 1px solid var(--glass-border) !important;
   color: var(--glass-text-primary) !important;
 }
-[data-theme="dark"] .ant-table-wrapper .ant-table-thead > tr > th {
+&[data-theme="dark"] .ant-table-wrapper .ant-table-thead > tr > th {
   background: rgba(255, 255, 255, 0.06) !important;
 }
 .ant-table-wrapper .ant-table-tbody > tr > td {
@@ -120,7 +122,7 @@
 .ant-table-wrapper .ant-table-tbody > tr:hover > td {
   background: rgba(255, 255, 255, 0.08) !important;
 }
-[data-theme="dark"] .ant-table-wrapper .ant-table-tbody > tr:hover > td {
+&[data-theme="dark"] .ant-table-wrapper .ant-table-tbody > tr:hover > td {
   background: rgba(255, 255, 255, 0.05) !important;
 }
 .ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td {
@@ -184,8 +186,8 @@
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
   background: rgba(255, 255, 255, 0.12) !important;
 }
-[data-theme="dark"] .ant-dropdown .ant-dropdown-menu-item:hover,
-[data-theme="dark"] .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+&[data-theme="dark"] .ant-dropdown .ant-dropdown-menu-item:hover,
+&[data-theme="dark"] .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 .ant-dropdown .ant-dropdown-menu-item-selected,
@@ -197,6 +199,7 @@
 .ant-dropdown-menu-item-divider {
   background: var(--glass-border) !important;
 }
+} /* end :root[data-theme-preset="glass"] antd scope */
 
 /* ── THEME PRESET PICKER ── */
 .theme-preset-grid {
@@ -210,24 +213,23 @@
   display: grid;
   grid-template-columns: 52px 1fr;
   grid-template-rows: auto auto;
+  align-content: center;
   gap: 2px 10px;
   width: 100%;
-  min-height: 72px;
-  padding: 10px;
+  min-height: 84px;
+  padding: 12px;
   text-align: left;
   color: var(--glass-text-primary);
   background: rgba(255, 255, 255, 0.10);
   border: 1px solid var(--glass-border);
   border-radius: var(--glass-radius-md);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.theme-preset-card:hover,
-.theme-preset-card.is-active {
-  border-color: var(--glass-accent);
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 24px var(--glass-accent-glow);
+.theme-preset-card:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
   transform: translateY(-1px);
 }
 
@@ -248,9 +250,11 @@
 }
 
 .theme-preset-name {
+  align-self: end;
   padding-right: 22px;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .theme-preset-meta {
@@ -345,108 +349,21 @@
   .theme-token-grid { grid-template-columns: 1fr; }
 }
 
-/* ── SOLID THEME OVERRIDES ── */
+/* ── SOLID (NON-GLASS) PRESETS ── */
+/* Component styling for non-glass presets is owned entirely by the official
+   antd themes in `src/theme/antd/*`. Here we only paint the page background;
+   the frosted-material rules that follow are scoped to the glass preset so they
+   never override an official theme. */
 :root:not([data-theme-preset="glass"]) body,
 :root:not([data-theme-preset="glass"]) #root {
-  background: var(--theme-bg-layout);
+  background: var(--ant-color-bg-layout, var(--theme-bg-layout));
 }
 
-:root:not([data-theme-preset="glass"]) .glass,
-:root:not([data-theme-preset="glass"]) .glass-card,
-:root:not([data-theme-preset="glass"]) .ant-card,
-:root:not([data-theme-preset="glass"]) .ant-modal-content,
-:root:not([data-theme-preset="glass"]) .ant-drawer-content,
-:root:not([data-theme-preset="glass"]) .ant-dropdown .ant-dropdown-menu,
-:root:not([data-theme-preset="glass"]) .ant-select-dropdown,
-:root:not([data-theme-preset="glass"]) .ant-picker-dropdown .ant-picker-panel-container,
-:root:not([data-theme-preset="glass"]) .ant-popover-content .ant-popover-inner {
-  background: var(--theme-bg-surface) !important;
-  border-color: var(--theme-border) !important;
-  box-shadow: var(--glass-shadow) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-btn-default,
-:root:not([data-theme-preset="glass"]) .ant-input,
-:root:not([data-theme-preset="glass"]) .ant-input-affix-wrapper,
-:root:not([data-theme-preset="glass"]) .ant-select:not(.ant-select-disabled) .ant-select-selector,
-:root:not([data-theme-preset="glass"]) .ant-picker,
-:root:not([data-theme-preset="glass"]) .ant-input-number {
-  background: var(--theme-bg-surface) !important;
-  border-color: var(--theme-border) !important;
-  color: var(--theme-text-primary) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-btn-default:not(:disabled):hover,
-:root:not([data-theme-preset="glass"]) .ant-input:hover,
-:root:not([data-theme-preset="glass"]) .ant-select:not(.ant-select-disabled):hover .ant-select-selector,
-:root:not([data-theme-preset="glass"]) .ant-picker:hover {
-  background: color-mix(in srgb, var(--theme-primary) 7%, var(--theme-bg-surface)) !important;
-  border-color: var(--theme-primary) !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-btn-primary,
-:root:not([data-theme-preset="glass"]) .login-button {
-  background: var(--theme-primary) !important;
-  box-shadow: none !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-table-wrapper .ant-table,
-:root:not([data-theme-preset="glass"]) .ant-table-wrapper .ant-table-tbody > tr > td {
-  background: var(--theme-bg-surface) !important;
-  color: var(--theme-text-primary) !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-table-wrapper .ant-table-thead > tr > th,
-:root:not([data-theme-preset="glass"]) .ant-table-wrapper .ant-table-thead > tr > td {
-  background: color-mix(in srgb, var(--theme-bg-layout) 82%, var(--theme-bg-surface)) !important;
-  border-bottom-color: var(--theme-border) !important;
-  color: var(--theme-text-primary) !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-table-wrapper .ant-table-tbody > tr:hover > td,
-:root:not([data-theme-preset="glass"]) .ant-menu-item:hover,
-:root:not([data-theme-preset="glass"]) .ant-menu-submenu-title:hover,
-:root:not([data-theme-preset="glass"]) .ant-dropdown .ant-dropdown-menu-item:hover,
-:root:not([data-theme-preset="glass"]) .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background: color-mix(in srgb, var(--theme-primary) 8%, var(--theme-bg-surface)) !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-modal-mask,
-:root:not([data-theme-preset="glass"]) .ant-drawer-mask {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-:root:not([data-theme-preset="glass"]) .ant-tag,
-:root:not([data-theme-preset="glass"]) .ant-tooltip .ant-tooltip-inner {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-[data-theme-preset="shadcn"] .ant-card,
-[data-theme-preset="shadcn"] .glass,
-[data-theme-preset="bootstrap"] .ant-card,
-[data-theme-preset="bootstrap"] .glass {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-[data-theme-preset="cartoon"] .ant-btn,
-[data-theme-preset="cartoon"] .ant-card,
-[data-theme-preset="cartoon"] .theme-preset-card {
-  border-width: 2px !important;
-}
-
-[data-theme-preset="geek"] .ant-table-wrapper .ant-table-thead > tr > th {
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-/* ── FORM INPUTS (GLOBAL) ── */
+/* ── GLASS PRESET MATERIAL (scoped) ── */
+/* Everything below only applies under the glass preset, so official themes
+   (mui/shadcn/geek/…) keep their own component styling untouched. */
+:root[data-theme-preset="glass"] {
+/* ── FORM INPUTS ── */
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select:not(.ant-select-disabled) .ant-select-selector,
@@ -531,7 +448,7 @@
   border-color: var(--glass-border) !important;
   color: var(--glass-text-primary) !important;
 }
-[data-theme="dark"] .ant-tag:not(.ant-tag-success):not(.ant-tag-error):not(.ant-tag-warning)
+&[data-theme="dark"] .ant-tag:not(.ant-tag-success):not(.ant-tag-error):not(.ant-tag-warning)
 :not(.ant-tag-processing):not(.ant-tag-blue):not(.ant-tag-blue)
 :not(.ant-tag-cyan):not(.ant-tag-green):not(.ant-tag-magenta)
 :not(.ant-tag-red):not(.ant-tag-orange):not(.ant-tag-gold)
@@ -568,8 +485,8 @@
   background: rgba(255, 255, 255, 0.10) !important;
   color: var(--glass-text-primary) !important;
 }
-[data-theme="dark"] .ant-menu-item:hover,
-[data-theme="dark"] .ant-menu-submenu-title:hover {
+&[data-theme="dark"] .ant-menu-item:hover,
+&[data-theme="dark"] .ant-menu-submenu-title:hover {
   background: rgba(255, 255, 255, 0.07) !important;
 }
 .ant-menu-item-selected {
@@ -645,6 +562,7 @@
 .ant-form-item-explain-error {
   color: #f87171 !important;
 }
+} /* end :root[data-theme-preset="glass"] scope */
 
 /* ── CHECKBOX ── */
 .ant-checkbox-wrapper {

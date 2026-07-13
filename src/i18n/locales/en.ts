@@ -145,6 +145,8 @@ export default {
     resetPasswordConfirm: 'Reset {{name}} to a random password?',
     resetPasswordResultTitle: 'New random password for {{name}}',
     resetPasswordSuccess: 'User password has been reset. Copy the new random password.',
+    deleteSourceConfirm: 'Delete {{source}} auth source from {{name}}?',
+    deleteSourceSuccess: 'User auth source deleted.',
     deleteConfirm: 'Are you sure to delete user {{name}}?',
     error: {
       username: 'Please enter a username.',

@@ -25,30 +25,32 @@ export interface ThemeCustomConfig {
   density: ThemeDensity
 }
 
+// Preview swatches + radius/density mirror the official antd theme tokens in
+// `src/theme/antd/*` so the picker cards and token editor show the real values.
 export const themePresets: ThemePreset[] = [
-  { key: 'default', mode: 'light', density: 'default', accent: '#1677ff', preview: ['#f8fafc', '#1677ff', '#d9e8ff'], radius: 10 },
-  { key: 'dark', mode: 'dark', density: 'default', accent: '#60a5fa', preview: ['#111827', '#60a5fa', '#334155'], radius: 10 },
-  { key: 'mui', mode: 'light', density: 'default', accent: '#1976d2', preview: ['#ffffff', '#1976d2', '#e3f2fd'], radius: 8 },
-  { key: 'shadcn', mode: 'light', density: 'compact', accent: '#18181b', preview: ['#fafafa', '#18181b', '#e4e4e7'], radius: 8 },
-  { key: 'cartoon', mode: 'light', density: 'default', accent: '#0ea5e9', preview: ['#fff7ed', '#0ea5e9', '#fed7aa'], radius: 16 },
-  { key: 'illustration', mode: 'light', density: 'default', accent: '#7c3aed', preview: ['#fff1f2', '#7c3aed', '#fde68a'], radius: 18 },
-  { key: 'bootstrap', mode: 'light', density: 'default', accent: '#0d6efd', preview: ['#f8f9fa', '#0d6efd', '#dee2e6'], radius: 6 },
+  { key: 'default', mode: 'light', density: 'default', accent: '#1677ff', preview: ['#f5f5f5', '#1677ff', '#d9e8ff'], radius: 8 },
+  { key: 'dark', mode: 'dark', density: 'default', accent: '#60a5fa', preview: ['#111827', '#60a5fa', '#334155'], radius: 8 },
+  { key: 'mui', mode: 'light', density: 'default', accent: '#1976d2', preview: ['#f5f5f5', '#1976d2', '#e3f2fd'], radius: 4 },
+  { key: 'shadcn', mode: 'light', density: 'default', accent: '#18181b', preview: ['#fafafa', '#18181b', '#e4e4e7'], radius: 10 },
+  { key: 'cartoon', mode: 'light', density: 'default', accent: '#225555', preview: ['#fafaee', '#225555', '#9cd3d3'], radius: 18 },
+  { key: 'illustration', mode: 'light', density: 'default', accent: '#52c41a', preview: ['#fff9f0', '#52c41a', '#fff0f6'], radius: 12 },
+  { key: 'bootstrap', mode: 'light', density: 'default', accent: '#0d6efd', preview: ['#f8f9fa', '#0d6efd', '#dee2e6'], radius: 4 },
   { key: 'glass', mode: 'light', density: 'compact', accent: '#3b82f6', preview: ['#e0f2fe', '#3b82f6', '#ffffff'], radius: 12 },
-  { key: 'geek', mode: 'dark', density: 'compact', accent: '#22c55e', preview: ['#020617', '#22c55e', '#164e63'], radius: 6 },
+  { key: 'geek', mode: 'dark', density: 'default', accent: '#39ff14', preview: ['#020617', '#39ff14', '#164e63'], radius: 0 },
 ]
 
 export const defaultThemePreset: ThemePresetKey = 'glass'
 
 const lightDefaults: Record<ThemePresetKey, Omit<ThemeCustomConfig, 'density' | 'borderRadius'>> = {
-  default: { primaryColor: '#1677ff', backgroundColor: '#f6f8fb', surfaceColor: '#ffffff', textColor: '#182230', textSecondaryColor: '#667085', borderColor: '#e4e7ec' },
+  default: { primaryColor: '#1677ff', backgroundColor: '#f5f5f5', surfaceColor: '#ffffff', textColor: '#1f1f1f', textSecondaryColor: '#8c8c8c', borderColor: '#d9d9d9' },
   dark: { primaryColor: '#60a5fa', backgroundColor: '#111827', surfaceColor: '#1f2937', textColor: '#f8fafc', textSecondaryColor: '#94a3b8', borderColor: '#334155' },
-  mui: { primaryColor: '#1976d2', backgroundColor: '#f5f7fb', surfaceColor: '#ffffff', textColor: '#1d2939', textSecondaryColor: '#667085', borderColor: '#d9e2ef' },
-  shadcn: { primaryColor: '#18181b', backgroundColor: '#fafafa', surfaceColor: '#ffffff', textColor: '#18181b', textSecondaryColor: '#71717a', borderColor: '#e4e4e7' },
-  cartoon: { primaryColor: '#0ea5e9', backgroundColor: '#fff7ed', surfaceColor: '#ffffff', textColor: '#1e293b', textSecondaryColor: '#64748b', borderColor: '#7dd3fc' },
-  illustration: { primaryColor: '#7c3aed', backgroundColor: '#fff7fb', surfaceColor: '#ffffff', textColor: '#312e4b', textSecondaryColor: '#7c728f', borderColor: '#e9d5ff' },
+  mui: { primaryColor: '#1976d2', backgroundColor: '#f5f5f5', surfaceColor: '#ffffff', textColor: '#212121', textSecondaryColor: '#6b6b6b', borderColor: '#e0e0e0' },
+  shadcn: { primaryColor: '#18181b', backgroundColor: '#fafafa', surfaceColor: '#ffffff', textColor: '#262626', textSecondaryColor: '#525252', borderColor: '#e5e5e5' },
+  cartoon: { primaryColor: '#225555', backgroundColor: '#fafaee', surfaceColor: '#ffffff', textColor: '#51463b', textSecondaryColor: '#7a6f63', borderColor: '#225555' },
+  illustration: { primaryColor: '#52c41a', backgroundColor: '#fff9f0', surfaceColor: '#ffffff', textColor: '#2c2c2c', textSecondaryColor: '#6b6b6b', borderColor: '#2c2c2c' },
   bootstrap: { primaryColor: '#0d6efd', backgroundColor: '#f8f9fa', surfaceColor: '#ffffff', textColor: '#212529', textSecondaryColor: '#6c757d', borderColor: '#dee2e6' },
   glass: { primaryColor: '#3b82f6', backgroundColor: '#eff6ff', surfaceColor: '#ffffff', textColor: '#14141e', textSecondaryColor: '#4b5563', borderColor: '#ffffff' },
-  geek: { primaryColor: '#22c55e', backgroundColor: '#020617', surfaceColor: '#0f172a', textColor: '#e2e8f0', textSecondaryColor: '#94a3b8', borderColor: '#1e3a2b' },
+  geek: { primaryColor: '#39ff14', backgroundColor: '#020617', surfaceColor: '#0f172a', textColor: '#39ff14', textSecondaryColor: '#94a3b8', borderColor: '#1e3a2b' },
 }
 
 const darkFallback = { backgroundColor: '#101828', surfaceColor: '#182230', textColor: '#f8fafc', textSecondaryColor: '#98a2b3', borderColor: '#344054' }

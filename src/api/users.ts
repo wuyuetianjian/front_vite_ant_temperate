@@ -16,6 +16,9 @@ export const usersApi = {
   resetPassword: (user_id: number) =>
     client.post<{ password: string }>(`/v1/users/${user_id}/reset-password`, {}).then((r) => r.data),
 
+  deleteAuthSource: (user_id: number, source: string) =>
+    client.delete<User>(`/v1/users/${user_id}/auth-sources/${encodeURIComponent(source)}`).then((r) => r.data),
+
   delete: (id: number) => client.delete(`/v1/users/${id}`),
 
   assignRoles: (user_id: number, role_ids: number[]) =>

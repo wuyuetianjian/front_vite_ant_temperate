@@ -7,7 +7,8 @@ import { isCustomIcon, useSystemSettingsStore } from './store/systemSettings'
 import { useAuthStore } from './store/auth'
 import { authApi } from './api/auth'
 import { router } from './router'
-import { buildAntdTheme, parseThemeConfig } from './theme/presets'
+import { parseThemeConfig } from './theme/presets'
+import { useAntdThemeConfig } from './theme/antd'
 
 function WallpaperBackground({ enabled }: { enabled: boolean }) {
   const url = useWallpaperStore((s) => s.url)
@@ -35,6 +36,7 @@ export default function App() {
   const effectiveMode = usesPersonalTheme ? mode : (settings.default_theme_mode || mode) as typeof mode
   const effectiveConfig = usesPersonalTheme ? customConfig : settings.default_theme_config
   const isDark = (effectiveMode === 'system' ? resolved() : effectiveMode) === 'dark'
+  const configProps = useAntdThemeConfig(effectivePreset, effectiveMode, effectiveConfig)
   const wallpaperUrl = useWallpaperStore((s) => s.url)
   const [ssoCompleting, setSSOCompleting] = useState(() => new URL(window.location.href).searchParams.has('sso_token'))
 
@@ -107,10 +109,8 @@ export default function App() {
   }, [wallpaperUrl])
 
   return (
-    <ConfigProvider
-      theme={buildAntdTheme(effectivePreset, effectiveMode, effectiveConfig)}
-    >
-      <AntdApp>
+    <ConfigProvider {...configProps}>
+      <AntdApp className={configProps.app?.className}>
         <WallpaperBackground enabled={effectivePreset === 'glass'} />
         {ssoCompleting ? null : <RouterProvider router={router} />}
       </AntdApp>

@@ -174,12 +174,12 @@ export default function AdminLayout() {
   const handleThemePresetChange = async (key: string) => {
     const selected = themePresets.find((item) => item.key === key)
     if (!selected) return
-    setPreset(selected.key, selected.mode)
+    setPreset(selected.key, selected.mode, '{}')
     try {
       const updated = await authApi.updateTheme({
         theme_preset: selected.key,
         theme_mode: selected.mode,
-        theme_config: '',
+        theme_config: '{}',
       })
       updateUser(updated)
     } catch {

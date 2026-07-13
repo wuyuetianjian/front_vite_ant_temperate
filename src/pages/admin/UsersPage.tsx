@@ -213,6 +213,24 @@ export default function UsersPage() {
     }
   }
 
+  const handleDeleteAuthSource = (user: User, source: string) => {
+    Modal.confirm({
+      title: t('users.deleteSourceConfirm', { name: user.username, source: sourceLabel(source) }),
+      okText: t('common.delete'),
+      okButtonProps: { danger: true },
+      cancelText: t('common.cancel'),
+      onOk: async () => {
+        try {
+          await usersApi.deleteAuthSource(user.id, source)
+          message.success(t('users.deleteSourceSuccess'))
+          load()
+        } catch (err) {
+          message.error(apiError(err))
+        }
+      },
+    })
+  }
+
   const columns: TableProps<User>['columns'] = [
     { title: t('common.id'), dataIndex: 'id', width: 70 },
     { title: t('users.username'), dataIndex: 'username', ellipsis: true },
@@ -237,10 +255,21 @@ export default function UsersPage() {
       render: (_: unknown, record: User) => {
         const colorMap: Record<string, string> = { local: 'default', ldap: 'cyan', oidc: 'geekblue', saml1: 'purple', saml2: 'purple' }
         const sources = record.auth_sources?.length ? record.auth_sources : [record.source || 'local']
+        const canDeleteSource = sources.length > 1
         return (
           <Space size={4} wrap>
             {sources.map((src) => (
-              <Tag key={src} color={colorMap[src.toLowerCase()] ?? 'default'}>{sourceLabel(src)}</Tag>
+              <Tag
+                key={src}
+                color={colorMap[src.toLowerCase()] ?? 'default'}
+                closable={canDeleteSource}
+                onClose={(event) => {
+                  event.preventDefault()
+                  handleDeleteAuthSource(record, src)
+                }}
+              >
+                {sourceLabel(src)}
+              </Tag>
             ))}
           </Space>
         )

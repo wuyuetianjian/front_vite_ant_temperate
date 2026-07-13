@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/auth'
 import { useAuthStore } from '../store/auth'
 import { useThemeStore, type ThemeMode, type ThemePresetKey } from '../store/theme'
-import { parseThemeConfig, previewThemeColor, serializeThemeConfig, themePresets, type ThemeCustomConfig } from '../theme/presets'
+import { getDefaultThemeConfig, parseThemeConfig, previewThemeColor, serializeThemeConfig, themePresets, type ThemeCustomConfig } from '../theme/presets'
 
 interface ThemeColorControlProps {
   label: string
@@ -103,12 +103,25 @@ export default function ThemePresetPanel() {
       <div className="theme-preset-grid">
         {themePresets.map((item) => {
           const active = item.key === preset
+          const cfg = getDefaultThemeConfig(item.key, item.mode)
           return (
-            <button key={item.key} type="button" className={`theme-preset-card${active ? ' is-active' : ''}`} onClick={() => savePreset(item.key)}>
-              <span className="theme-preset-preview" aria-hidden="true"><span style={{ background: item.preview[0] }} /><span style={{ background: item.preview[1] }} /><span style={{ background: item.preview[2] }} /></span>
-              <span className="theme-preset-name">{t(`theme.presets.${item.key}`)}</span>
-              <span className="theme-preset-meta">{item.density === 'compact' ? t('theme.compact') : t('theme.comfortable')}</span>
-              {active && <CheckOutlined className="theme-preset-check" />}
+            <button
+              key={item.key}
+              type="button"
+              className={`theme-preset-card${active ? ' is-active' : ''}`}
+              onClick={() => savePreset(item.key)}
+              style={{
+                background: `linear-gradient(135deg, ${cfg.backgroundColor} 0%, ${cfg.surfaceColor} 72%)`,
+                color: cfg.textColor,
+                borderColor: active ? cfg.primaryColor : cfg.borderColor,
+                borderRadius: cfg.borderRadius,
+                boxShadow: active ? `0 8px 24px ${cfg.primaryColor}55` : undefined,
+              }}
+            >
+              <span className="theme-preset-preview" aria-hidden="true" style={{ borderColor: cfg.borderColor }}><span style={{ background: item.preview[0] }} /><span style={{ background: item.preview[1] }} /><span style={{ background: item.preview[2] }} /></span>
+              <span className="theme-preset-name" style={{ color: cfg.textColor }}>{t(`theme.presets.${item.key}`)}</span>
+              <span className="theme-preset-meta" style={{ color: cfg.textSecondaryColor }}>{item.density === 'compact' ? t('theme.compact') : t('theme.comfortable')}</span>
+              {active && <CheckOutlined className="theme-preset-check" style={{ color: cfg.primaryColor }} />}
             </button>
           )
         })}

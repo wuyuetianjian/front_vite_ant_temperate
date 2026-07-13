@@ -145,6 +145,8 @@ export default {
     resetPasswordConfirm: '确认将 {{name}} 的密码重置为随机密码？',
     resetPasswordResultTitle: '{{name}} 的新随机密码',
     resetPasswordSuccess: '用户密码已重置，请复制新随机密码',
+    deleteSourceConfirm: '确认删除 {{name}} 的 {{source}} 用户来源？',
+    deleteSourceSuccess: '用户来源已删除',
     deleteConfirm: '确认删除用户 {{name}}？',
     error: {
       username: '请输入用户名',
